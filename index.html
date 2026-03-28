@@ -317,7 +317,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 <script>
 var SHEET_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=1548351330&single=true&output=csv';
 var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4-HJC__D0Nsxw8b0EI_f2JvifALmwqr_pHqbPBHuHpRfVUlE6KRRVHKQ1hsqdkzWypQ/exec';
-var SUBS_CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=887843324&single=true&output=csv';
+var SUBS_CSV_URL     = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=887843324&single=true&output=csv';
+var MATCHLOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=1844256889&single=true&output=csv'; // publish MatchLog tab as CSV, paste URL here
 
 var DRAFT = {
   Prakhar: ["Shubman Gill","Virat Kohli","Yashasvi Jaiswal","Noor Ahmad","Mitchell Marsh","Prasidh Krishna","Travis Head","Jos Buttler","Rohit Sharma","Trent Boult","Krunal Pandya","Prabhsimran Singh"],
@@ -327,6 +328,7 @@ var DRAFT = {
 
 var playerPool = {};
 var executedSubs = [];
+var matchLog = [];
 
 function ownerClass(o) { return o==='Prakhar'?'p':o==='Adarsh'?'a':'k'; }
 function ownerAccent(o){ return o==='Prakhar'?'var(--accent-p)':o==='Adarsh'?'var(--accent-a)':'var(--accent-k)'; }
@@ -386,6 +388,66 @@ function parseSubsCSV(text){
       sheetPendingSubs.push({owner:c[0],out:c[1],in:c[2],requested:c[4],executes:c[5],status:'pending',id:c[4]});
     }
   }
+}
+
+function parseMatchLog(text) {
+  matchLog = [];
+  var lines = text.trim().split('\n');
+  for (var i = 1; i < lines.length; i++) {
+    var c = parseCSVLine(lines[i]);
+    if (!c[0]) continue;
+    matchLog.push({
+      date:       c[0].trim(),
+      team1:      c[1].trim(),
+      team2:      c[2].trim(),
+      player:     c[3].trim(),
+      owner:      c[4].trim(),
+      preRuns:    parseFloat(c[5])  || 0,
+      preWkts:    parseFloat(c[6])  || 0,
+      finalRuns:  parseFloat(c[7])  || 0,
+      finalWkts:  parseFloat(c[8])  || 0,
+      finalPts:   parseFloat(c[9])  || 0,
+      status:     (c[10] || '').trim().toLowerCase()
+    });
+  }
+}
+
+// Returns { owner: { playerName: pts } } for a given fixture date+teams
+// Uses finalPts for completed matches, live delta for pre_snapshot matches
+function getMatchPoints(fdate, t1, t2) {
+  // Try final entries first
+  var finals = matchLog.filter(function(r) {
+    return r.date === fdate && r.team1 === t1 && r.team2 === t2 && r.status === 'final';
+  });
+  if (finals.length > 0) {
+    var result = {};
+    for (var i = 0; i < finals.length; i++) {
+      var r = finals[i];
+      if (!result[r.owner]) result[r.owner] = {};
+      result[r.owner][r.player] = { pts: r.finalPts, live: false };
+    }
+    return result;
+  }
+
+  // Try pre_snapshot entries (live match in progress)
+  var pres = matchLog.filter(function(r) {
+    return r.date === fdate && r.team1 === t1 && r.team2 === t2 && r.status === 'pre_snapshot';
+  });
+  if (pres.length > 0) {
+    var result = {};
+    for (var i = 0; i < pres.length; i++) {
+      var r = pres[i];
+      var pool = playerPool[r.player] || { runs: 0, wickets: 0 };
+      var liveRuns = Math.max(0, pool.runs - r.preRuns);
+      var liveWkts = Math.max(0, pool.wickets - r.preWkts);
+      var livePts  = liveRuns + liveWkts * 25;
+      if (!result[r.owner]) result[r.owner] = {};
+      result[r.owner][r.player] = { pts: livePts, live: true };
+    }
+    return result;
+  }
+
+  return null; // no data yet
 }
 
 function getPendingSubs(){
@@ -610,6 +672,12 @@ async function loadData(){
     else throw new Error('HTTP '+r1.status);
   }catch(e){showError('Could not load scores from Google Sheets. Showing 0 pts. ('+e.message+')');}
   try{
+    if (MATCHLOG_CSV_URL !== 'MATCHLOG_CSV_URL_HERE') {
+      var rm = await fetch(MATCHLOG_CSV_URL + '&t=' + Date.now());
+      if (rm.ok) parseMatchLog(await rm.text());
+    }
+  } catch(e) {}
+  try{
     var r2=await fetch(SUBS_CSV_URL+'&t='+Date.now());
     if(r2.ok) parseSubsCSV(await r2.text());
   }catch(e){}
@@ -745,8 +813,8 @@ function renderFixtures() {
   var istOffset = 5.5 * 60 * 60000;
   var ist = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + istOffset);
   var todayStr = ist.getFullYear() + '-' +
-    String(ist.getMonth()+1).padStart(2,'0') + '-' +
-    String(ist.getDate()).padStart(2,'0');
+    ('0'+(ist.getMonth()+1)).slice(-2) + '-' +
+    ('0'+ist.getDate()).slice(-2);
 
   var html = '';
   var todayIdx = -1;
@@ -779,10 +847,11 @@ function renderFixtures() {
     var cardClass = 'fx-card';
     if (isPast)  cardClass += ' fx-past';
     if (isToday) { cardClass += ' fx-today'; todayIdx = fi; }
-    if (!isPast && todayIdx === -1 && !isToday) {
-      // Mark first upcoming as scroll target
-      if (todayIdx === -1) todayIdx = fi;
-    }
+    if (!isPast && !isToday && todayIdx === -1) todayIdx = fi;
+
+    // Get match points data (past = final, today = live delta, future = null)
+    var matchPts = (isPast || isToday) ? getMatchPoints(fdate, t1, t2) : null;
+    var isLive   = matchPts && !isPast; // pre_snapshot data = live match
 
     // Build player rows per owner
     var playerRowsHtml = '';
@@ -794,10 +863,23 @@ function renderFixtures() {
       var chipsHtml = '';
       for (var cp = 0; cp < players.length; cp++) {
         var pteam = players[cp].team;
+        var pname = players[cp].name;
         var txtColor = TEAM_TEXT[pteam] ? TEAM_TEXT[pteam] : '#fff';
-        chipsHtml += '<div class="fx-player-chip">' +
+        var ptsHtml = '';
+        if (matchPts && matchPts[owner] && matchPts[owner][pname] !== undefined) {
+          var pd = matchPts[owner][pname];
+          var ptsColor = pd.live ? 'var(--accent-a)' : (pd.pts > 0 ? 'var(--green)' : 'var(--muted)');
+          var ptsLabel = pd.live ? (pd.pts + ' pts*') : (pd.pts + ' pts');
+          ptsHtml = '<span style="font-family:var(--font-mono);font-size:10px;color:' + ptsColor + ';margin-left:auto;padding-left:6px">' + ptsLabel + '</span>';
+        } else if (matchPts) {
+          ptsHtml = '<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:auto;padding-left:6px">—</span>';
+        }
+        chipsHtml += '<div class="fx-player-chip" style="justify-content:space-between">' +
+          '<div style="display:flex;align-items:center;gap:5px">' +
           '<span class="fx-team-pill team-' + pteam + '" style="color:' + txtColor + '">' + pteam + '</span>' +
-          '<span>' + players[cp].name + '</span>' +
+          '<span>' + pname + '</span>' +
+          '</div>' +
+          ptsHtml +
           '</div>';
       }
       playerRowsHtml += '<div class="fx-owner-row">' +
@@ -809,8 +891,10 @@ function renderFixtures() {
       playerRowsHtml = '<div class="fx-no-players">No drafted players</div>';
     }
 
+    var liveBadge = isLive ? ' <span style="font-family:var(--font-mono);font-size:9px;background:rgba(37,99,235,.1);color:var(--accent-a);border:1px solid rgba(37,99,235,.25);padding:1px 6px;border-radius:10px;vertical-align:middle">LIVE</span>' : '';
+    var completedBadge = (isPast && matchPts) ? ' <span style="font-family:var(--font-mono);font-size:9px;background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2);padding:1px 6px;border-radius:10px;vertical-align:middle">DONE</span>' : '';
     html += '<div class="' + cardClass + '" data-idx="' + fi + '">' +
-      '<div class="fx-matchup">' + t1 + ' vs ' + t2 + '</div>' +
+      '<div class="fx-matchup">' + t1 + ' vs ' + t2 + liveBadge + completedBadge + '</div>' +
       '<div class="fx-meta">' + dateLabel + ' &middot; ' + timeLabel + ' &middot; ' + venue + '</div>' +
       '<hr class="fx-divider">' +
       playerRowsHtml +
@@ -852,6 +936,15 @@ function initDragScroll(el) {
 
 setInterval(loadData,300000);
 loadData();
+// Fallback: render fixtures after DOM ready in case loadData is slow
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    if (!document.getElementById('tickerInner').innerHTML) {
+      seedPool();
+      renderFixtures();
+    }
+  }, 500);
+});
 </script>
 </body>
 </html>
