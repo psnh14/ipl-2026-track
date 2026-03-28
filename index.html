@@ -114,105 +114,167 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 .fixtures-section { padding: 40px 0 0; }
 .ticker-wrap {
   overflow-x: auto;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
   cursor: grab;
+  -webkit-overflow-scrolling: touch;
 }
 .ticker-wrap:active { cursor: grabbing; }
 .ticker-wrap::-webkit-scrollbar { height: 4px; }
-.ticker-wrap::-webkit-scrollbar-track { background: transparent; }
 .ticker-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.ticker-inner {
-  display: flex;
-  gap: 12px;
-  width: max-content;
-  padding: 4px 2px 4px;
-}
+.ticker-inner { display: flex; gap: 10px; width: max-content; padding: 4px 2px 4px; }
+
+/* ── BASE CARD ── */
 .fx-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 16px;
-  width: 240px;
+  border-radius: 12px;
+  width: 220px;
   flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
-  transition: box-shadow .15s, border-color .15s;
-  scroll-snap-align: start;
-}
-.fx-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.09); }
-.fx-card.fx-past { opacity: .5; }
-.fx-card.fx-today { border-color: var(--accent-a); box-shadow: 0 0 0 2px rgba(37,99,235,.12); }
-.fx-matchup {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  letter-spacing: .03em;
-  color: var(--text);
-  margin-bottom: 2px;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  transition: box-shadow .15s, transform .15s;
+  position: relative;
 }
-.fx-meta {
+.fx-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.1); transform: translateY(-1px); }
+.fx-card.fx-past { opacity: .45; }
+.fx-card.fx-today { border-color: var(--accent-a); box-shadow: 0 0 0 2px rgba(37,99,235,.1); }
+
+/* ── CARD HEADER ── */
+.fx-header {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.fx-teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.fx-team-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: .85rem;
+  letter-spacing: .02em;
+  color: #fff;
+  flex-shrink: 0;
+}
+.fx-vs {
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--sub);
-  margin-bottom: 10px;
-  letter-spacing: .03em;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .06em;
+  flex: 1;
+  text-align: center;
 }
-.fx-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+.fx-date-time {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--sub);
+  letter-spacing: .02em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.fx-live-badge {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  background: rgba(37,99,235,.1);
+  color: var(--accent-a);
+  border: 1px solid rgba(37,99,235,.2);
+  padding: 1px 6px;
+  border-radius: 8px;
+  letter-spacing: .06em;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.fx-done-badge {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  background: rgba(22,163,74,.08);
+  color: var(--green);
+  border: 1px solid rgba(22,163,74,.18);
+  padding: 1px 6px;
+  border-radius: 8px;
+  letter-spacing: .04em;
+}
+
+/* ── PLAYERS BODY ── */
+.fx-body { padding: 10px 14px 12px; }
 .fx-no-players {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--muted);
   text-align: center;
-  padding: 4px 0;
+  padding: 6px 0;
 }
-.fx-owner-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 5px; }
-.fx-owner-row:last-child { margin-bottom: 0; }
-.fx-owner-name {
+.fx-owner-block { margin-bottom: 9px; }
+.fx-owner-block:last-child { margin-bottom: 0; }
+.fx-owner-label {
   font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
-  min-width: 44px;
-  padding-top: 2px;
-  letter-spacing: .04em;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
 }
-.fx-owner-name.p { color: var(--accent-p); }
-.fx-owner-name.a { color: var(--accent-a); }
-.fx-owner-name.k { color: var(--accent-k); }
-.fx-players { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-.fx-player-chip {
-  display: inline-flex;
+.fx-owner-label.p { color: var(--accent-p); }
+.fx-owner-label.a { color: var(--accent-a); }
+.fx-owner-label.k { color: var(--accent-k); }
+.fx-player-row {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(221,226,238,.4);
+}
+.fx-player-row:last-child { border-bottom: none; }
+.fx-team-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.fx-player-name {
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--text);
-  line-height: 1.3;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.fx-team-pill {
-  display: inline-block;
+.fx-player-pts {
   font-family: var(--font-mono);
-  font-size: 8px;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 3px;
-  letter-spacing: .04em;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
   flex-shrink: 0;
-  color: #fff;
 }
-/* Team colours */
-.team-RCB { background: #c1121f; }
-.team-CSK { background: #e6a817; color: #000 !important; }
-.team-MI  { background: #004ba0; }
-.team-GT  { background: #1b2a6b; }
-.team-SRH { background: #e8610a; }
-.team-KKR { background: #3a225d; }
-.team-RR  { background: #d4156b; }
-.team-DC  { background: #0078bc; }
-.team-PBKS{ background: #b91c1c; }
-.team-LSG { background: #5a8a00; }
+.fx-pts-live { color: var(--accent-a); }
+.fx-pts-done { color: var(--green); }
+.fx-pts-zero { color: var(--muted); }
+.fx-pts-none { color: var(--muted); }
+
+/* ── TEAM COLOURS (used for badge bg + dot) ── */
+.tc-RCB  { background: #c1121f; }
+.tc-CSK  { background: #d4a017; }
+.tc-MI   { background: #004ba0; }
+.tc-GT   { background: #1b2a6b; }
+.tc-SRH  { background: #e8610a; }
+.tc-KKR  { background: #3a225d; }
+.tc-RR   { background: #d4156b; }
+.tc-DC   { background: #0078bc; }
+.tc-PBKS { background: #b91c1c; }
+.tc-LSG  { background: #5a8a00; }
 
 </style>
 </head>
@@ -798,7 +860,7 @@ function renderFixtures() {
   var inner = document.getElementById('tickerInner');
   if (!inner) return;
 
-  // Build active squad map: player -> owner (using computeSquad for accuracy)
+  // Build active squad map: player -> owner
   var playerOwner = {};
   var owners = ['Prakhar','Adarsh','Krishna'];
   for (var oi = 0; oi < owners.length; oi++) {
@@ -808,96 +870,95 @@ function renderFixtures() {
     }
   }
 
-  // Today's date in IST as YYYY-MM-DD
+  // Today in IST
   var now = new Date();
-  var istOffset = 5.5 * 60 * 60000;
-  var ist = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + istOffset);
-  var todayStr = ist.getFullYear() + '-' +
-    ('0'+(ist.getMonth()+1)).slice(-2) + '-' +
-    ('0'+ist.getDate()).slice(-2);
+  var ist = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 5.5 * 3600000);
+  var todayStr = ist.getFullYear() + '-' + ('0'+(ist.getMonth()+1)).slice(-2) + '-' + ('0'+ist.getDate()).slice(-2);
 
   var html = '';
   var todayIdx = -1;
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
   for (var fi = 0; fi < FIXTURES.length; fi++) {
-    var fx    = FIXTURES[fi];
+    var fx = FIXTURES[fi];
     var fdate = fx[0], ftime = fx[1], t1 = fx[2], t2 = fx[3], venue = fx[4];
-    var isPast   = fdate < todayStr;
-    var isToday  = fdate === todayStr;
+    var isPast  = fdate < todayStr;
+    var isToday = fdate === todayStr;
 
-    // Format date nicely
-    var d = new Date(fdate + 'T00:00:00');
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    if (!isPast && !isToday && todayIdx === -1) todayIdx = fi;
+    if (isToday && todayIdx === -1) todayIdx = fi;
+
+    // Date label
+    var d = new Date(fdate + 'T12:00:00');
     var dateLabel = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
-    var timeLabel = (parseInt(ftime) > 12 ? parseInt(ftime)-12 : parseInt(ftime)) +
-      ':' + ftime.split(':')[1] + ' PM IST';
+    var h = parseInt(ftime), m = ftime.split(':')[1];
+    var timeLabel = (h > 12 ? h - 12 : h) + ':' + m + ' PM';
 
-    // Find drafted players in this fixture, grouped by owner
+    // Match points
+    var matchPts = (isPast || isToday) ? getMatchPoints(fdate, t1, t2) : null;
+    var isLive   = !!(matchPts && isToday && (function(){ for(var o in matchPts){ for(var p in matchPts[o]){ if(matchPts[o][p].live) return true; }} return false; })());
+
+    // Find drafted players per owner
     var ownerPlayers = { Prakhar:[], Adarsh:[], Krishna:[] };
     for (var pname in playerOwner) {
-      var pteam = PLAYER_TEAM[pname];
-      if (pteam === t1 || pteam === t2) {
-        ownerPlayers[playerOwner[pname]].push({ name: pname, team: pteam });
-      }
+      var pt = PLAYER_TEAM[pname];
+      if (pt === t1 || pt === t2) ownerPlayers[playerOwner[pname]].push({ name: pname, team: pt });
     }
     var hasAny = ownerPlayers.Prakhar.length + ownerPlayers.Adarsh.length + ownerPlayers.Krishna.length > 0;
 
     // Card class
-    var cardClass = 'fx-card';
-    if (isPast)  cardClass += ' fx-past';
-    if (isToday) { cardClass += ' fx-today'; todayIdx = fi; }
-    if (!isPast && !isToday && todayIdx === -1) todayIdx = fi;
+    var cls = 'fx-card' + (isPast ? ' fx-past' : '') + (isToday ? ' fx-today' : '');
 
-    // Get match points data (past = final, today = live delta, future = null)
-    var matchPts = (isPast || isToday) ? getMatchPoints(fdate, t1, t2) : null;
-    var isLive   = matchPts && !isPast; // pre_snapshot data = live match
+    // Header badges
+    var badge = '';
+    if (isLive) badge = '<span class="fx-live-badge">LIVE</span>';
+    else if (isPast && matchPts) badge = '<span class="fx-done-badge">DONE</span>';
 
-    // Build player rows per owner
-    var playerRowsHtml = '';
+    // Team badges (coloured squares with initials)
+    var t1badge = '<div class="fx-team-badge tc-' + t1 + '">' + t1 + '</div>';
+    var t2badge = '<div class="fx-team-badge tc-' + t2 + '">' + t2 + '</div>';
+
+    // Player rows per owner
+    var bodyHtml = '';
     var ownerList = ['Prakhar','Adarsh','Krishna'];
     for (var ow = 0; ow < ownerList.length; ow++) {
       var owner = ownerList[ow];
       var players = ownerPlayers[owner];
-      if (players.length === 0) continue;
-      var chipsHtml = '';
+      if (!players.length) continue;
+
+      var playerRowsHtml = '';
       for (var cp = 0; cp < players.length; cp++) {
-        var pteam = players[cp].team;
-        var pname = players[cp].name;
-        var txtColor = TEAM_TEXT[pteam] ? TEAM_TEXT[pteam] : '#fff';
+        var pn = players[cp].name, pt2 = players[cp].team;
         var ptsHtml = '';
-        if (matchPts && matchPts[owner] && matchPts[owner][pname] !== undefined) {
-          var pd = matchPts[owner][pname];
-          var ptsColor = pd.live ? 'var(--accent-a)' : (pd.pts > 0 ? 'var(--green)' : 'var(--muted)');
-          var ptsLabel = pd.live ? (pd.pts + ' pts*') : (pd.pts + ' pts');
-          ptsHtml = '<span style="font-family:var(--font-mono);font-size:10px;color:' + ptsColor + ';margin-left:auto;padding-left:6px">' + ptsLabel + '</span>';
+        if (matchPts && matchPts[owner] && matchPts[owner][pn] !== undefined) {
+          var pd = matchPts[owner][pn];
+          var cls2 = pd.live ? 'fx-pts-live' : (pd.pts > 0 ? 'fx-pts-done' : 'fx-pts-zero');
+          ptsHtml = '<span class="fx-player-pts ' + cls2 + '">' + pd.pts + (pd.live ? '*' : '') + ' pts</span>';
         } else if (matchPts) {
-          ptsHtml = '<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:auto;padding-left:6px">—</span>';
+          ptsHtml = '<span class="fx-player-pts fx-pts-none">—</span>';
         }
-        chipsHtml += '<div class="fx-player-chip" style="justify-content:space-between">' +
-          '<div style="display:flex;align-items:center;gap:5px">' +
-          '<span class="fx-team-pill team-' + pteam + '" style="color:' + txtColor + '">' + pteam + '</span>' +
-          '<span>' + pname + '</span>' +
-          '</div>' +
+        playerRowsHtml += '<div class="fx-player-row">' +
+          '<span class="fx-team-dot tc-' + pt2 + '"></span>' +
+          '<span class="fx-player-name">' + pn + '</span>' +
           ptsHtml +
           '</div>';
       }
-      playerRowsHtml += '<div class="fx-owner-row">' +
-        '<span class="fx-owner-name ' + ownerClass(owner) + '">' + owner.toUpperCase().slice(0,3) + '</span>' +
-        '<div class="fx-players">' + chipsHtml + '</div>' +
+      bodyHtml += '<div class="fx-owner-block">' +
+        '<div class="fx-owner-label ' + ownerClass(owner) + '">' + owner + '</div>' +
+        playerRowsHtml +
         '</div>';
     }
-    if (!hasAny) {
-      playerRowsHtml = '<div class="fx-no-players">No drafted players</div>';
-    }
+    if (!hasAny) bodyHtml = '<div class="fx-no-players">No drafted players</div>';
 
-    var liveBadge = isLive ? ' <span style="font-family:var(--font-mono);font-size:9px;background:rgba(37,99,235,.1);color:var(--accent-a);border:1px solid rgba(37,99,235,.25);padding:1px 6px;border-radius:10px;vertical-align:middle">LIVE</span>' : '';
-    var completedBadge = (isPast && matchPts) ? ' <span style="font-family:var(--font-mono);font-size:9px;background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2);padding:1px 6px;border-radius:10px;vertical-align:middle">DONE</span>' : '';
-    html += '<div class="' + cardClass + '" data-idx="' + fi + '">' +
-      '<div class="fx-matchup">' + t1 + ' vs ' + t2 + liveBadge + completedBadge + '</div>' +
-      '<div class="fx-meta">' + dateLabel + ' &middot; ' + timeLabel + ' &middot; ' + venue + '</div>' +
-      '<hr class="fx-divider">' +
-      playerRowsHtml +
+    html += '<div class="' + cls + '">' +
+      '<div class="fx-header">' +
+        '<div class="fx-teams">' + t1badge + '<span class="fx-vs">VS</span>' + t2badge +
+          (badge ? '<span style="margin-left:auto">' + badge + '</span>' : '') +
+        '</div>' +
+        '<div class="fx-date-time">' + dateLabel + ' &middot; ' + timeLabel + ' &middot; ' + venue + '</div>' +
+      '</div>' +
+      '<div class="fx-body">' + bodyHtml + '</div>' +
       '</div>';
   }
 
@@ -907,13 +968,9 @@ function renderFixtures() {
   if (todayIdx > 0) {
     var wrap = document.getElementById('tickerWrap');
     var cards = inner.querySelectorAll('.fx-card');
-    if (cards[todayIdx]) {
-      var scrollTo = cards[todayIdx].offsetLeft - 20;
-      wrap.scrollLeft = scrollTo;
-    }
+    if (cards[todayIdx]) wrap.scrollLeft = cards[todayIdx].offsetLeft - 20;
   }
 
-  // Drag-to-scroll
   initDragScroll(document.getElementById('tickerWrap'));
 }
 
