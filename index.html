@@ -307,17 +307,17 @@ function computeSquad(owner){
     active.push({name:s.in,rb:s.inRunsBaseline,wb:s.inWktsBaseline,subbed:true,pending:false});
   }
   var pending=getPendingSubs().filter(function(s){return s.owner===owner;});
-  for(var i=0;i<pending.length;i++){
-    var s=pending[i];
-    for(var j=0;j<active.length;j++){if(active[j].name===s.out){active.splice(j,1);break;}}
-    active.push({name:s.in,rb:0,wb:0,subbed:true,pending:true});
+  for(var pi=0;pi<pending.length;pi++){
+    var ps=pending[pi];
+    for(var pj=0;pj<active.length;pj++){if(active[pj].name===ps.out){active.splice(pj,1);break;}}
+    active.push({name:ps.in,rb:0,wb:0,subbed:true,pending:true});
   }
   var resolved=active.map(function(p){
     var pool=playerPool[p.name]||{team:'-',role:'-',runs:0,wickets:0};
     var r=Math.max(0,pool.runs-p.rb),w=Math.max(0,pool.wickets-p.wb);
     return{name:p.name,team:pool.team,role:pool.role,runs:r,wickets:w,points:r+w*25,subbed:p.subbed,pending:p.pending,retired:false};
   });
-  for(var i=0;i<retired.length;i++) resolved.push(retired[i]);
+  for(var ri=0;ri<retired.length;ri++) resolved.push(retired[ri]);
   return resolved;
 }
 
