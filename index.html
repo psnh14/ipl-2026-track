@@ -114,18 +114,16 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 .fixtures-section { padding: 40px 0 0; }
 .ticker-wrap {
   overflow-x: auto;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
   cursor: grab;
-  -webkit-overflow-scrolling: touch;
 }
 .ticker-wrap:active { cursor: grabbing; }
 .ticker-wrap::-webkit-scrollbar { height: 4px; }
 .ticker-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 .ticker-inner { display: flex; gap: 10px; width: max-content; padding: 4px 2px 4px; }
 
-/* ── BASE CARD ── */
 .fx-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -141,7 +139,6 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 .fx-card.fx-past { opacity: .45; }
 .fx-card.fx-today { border-color: var(--accent-a); box-shadow: 0 0 0 2px rgba(37,99,235,.1); }
 
-/* ── CARD HEADER ── */
 .fx-header {
   padding: 12px 14px 10px;
   border-bottom: 1px solid var(--border);
@@ -206,8 +203,6 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
   border-radius: 8px;
   letter-spacing: .04em;
 }
-
-/* ── PLAYERS BODY ── */
 .fx-body { padding: 10px 14px 12px; }
 .fx-no-players {
   font-family: var(--font-mono);
@@ -264,7 +259,6 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 .fx-pts-zero { color: var(--muted); }
 .fx-pts-none { color: var(--muted); }
 
-/* ── TEAM COLOURS (used for badge bg + dot) ── */
 .tc-RCB  { background: #c1121f; }
 .tc-CSK  { background: #d4a017; }
 .tc-MI   { background: #004ba0; }
@@ -275,7 +269,6 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 .tc-DC   { background: #0078bc; }
 .tc-PBKS { background: #b91c1c; }
 .tc-LSG  { background: #5a8a00; }
-
 </style>
 </head>
 <body>
@@ -860,46 +853,38 @@ function renderFixtures() {
   var inner = document.getElementById('tickerInner');
   if (!inner) return;
 
-  // Build active squad map: player -> owner
   var playerOwner = {};
   var owners = ['Prakhar','Adarsh','Krishna'];
   for (var oi = 0; oi < owners.length; oi++) {
     var sq = computeSquad(owners[oi]).filter(function(p){ return !p.retired; });
-    for (var pi = 0; pi < sq.length; pi++) {
-      playerOwner[sq[pi].name] = owners[oi];
-    }
+    for (var pi2 = 0; pi2 < sq.length; pi2++) playerOwner[sq[pi2].name] = owners[oi];
   }
 
-  // Today in IST
   var now = new Date();
   var ist = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 5.5 * 3600000);
   var todayStr = ist.getFullYear() + '-' + ('0'+(ist.getMonth()+1)).slice(-2) + '-' + ('0'+ist.getDate()).slice(-2);
-
-  var html = '';
-  var todayIdx = -1;
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  var html = '', todayIdx = -1;
 
   for (var fi = 0; fi < FIXTURES.length; fi++) {
     var fx = FIXTURES[fi];
     var fdate = fx[0], ftime = fx[1], t1 = fx[2], t2 = fx[3], venue = fx[4];
     var isPast  = fdate < todayStr;
     var isToday = fdate === todayStr;
+    if (todayIdx === -1 && (isToday || (!isPast && !isToday))) todayIdx = fi;
 
-    if (!isPast && !isToday && todayIdx === -1) todayIdx = fi;
-    if (isToday && todayIdx === -1) todayIdx = fi;
-
-    // Date label
     var d = new Date(fdate + 'T12:00:00');
-    var dateLabel = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
-    var h = parseInt(ftime), m = ftime.split(':')[1];
-    var timeLabel = (h > 12 ? h - 12 : h) + ':' + m + ' PM';
+    var dateStr = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
+    var h = parseInt(ftime), mn = ftime.split(':')[1];
+    var timeStr = (h > 12 ? h - 12 : h) + ':' + mn + ' PM';
 
-    // Match points
     var matchPts = (isPast || isToday) ? getMatchPoints(fdate, t1, t2) : null;
-    var isLive   = !!(matchPts && isToday && (function(){ for(var o in matchPts){ for(var p in matchPts[o]){ if(matchPts[o][p].live) return true; }} return false; })());
+    var isLive = !!(matchPts && isToday && (function(mp){
+      for (var o in mp) { for (var p in mp[o]) { if (mp[o][p] && mp[o][p].live) return true; } } return false;
+    })(matchPts));
 
-    // Find drafted players per owner
     var ownerPlayers = { Prakhar:[], Adarsh:[], Krishna:[] };
     for (var pname in playerOwner) {
       var pt = PLAYER_TEAM[pname];
@@ -907,56 +892,49 @@ function renderFixtures() {
     }
     var hasAny = ownerPlayers.Prakhar.length + ownerPlayers.Adarsh.length + ownerPlayers.Krishna.length > 0;
 
-    // Card class
-    var cls = 'fx-card' + (isPast ? ' fx-past' : '') + (isToday ? ' fx-today' : '');
+    var cardCls = 'fx-card' + (isPast ? ' fx-past' : '') + (isToday ? ' fx-today' : '');
 
-    // Header badges
     var badge = '';
-    if (isLive) badge = '<span class="fx-live-badge">LIVE</span>';
-    else if (isPast && matchPts) badge = '<span class="fx-done-badge">DONE</span>';
+    if (isLive) badge = ' <span class="fx-live-badge">LIVE</span>';
+    else if (isPast && matchPts) badge = ' <span class="fx-done-badge">DONE</span>';
 
-    // Team badges (coloured squares with initials)
     var t1badge = '<div class="fx-team-badge tc-' + t1 + '">' + t1 + '</div>';
     var t2badge = '<div class="fx-team-badge tc-' + t2 + '">' + t2 + '</div>';
 
-    // Player rows per owner
     var bodyHtml = '';
     var ownerList = ['Prakhar','Adarsh','Krishna'];
     for (var ow = 0; ow < ownerList.length; ow++) {
       var owner = ownerList[ow];
       var players = ownerPlayers[owner];
       if (!players.length) continue;
-
-      var playerRowsHtml = '';
+      var rows = '';
       for (var cp = 0; cp < players.length; cp++) {
-        var pn = players[cp].name, pt2 = players[cp].team;
+        var pn = players[cp].name, pteam = players[cp].team;
         var ptsHtml = '';
         if (matchPts && matchPts[owner] && matchPts[owner][pn] !== undefined) {
           var pd = matchPts[owner][pn];
-          var cls2 = pd.live ? 'fx-pts-live' : (pd.pts > 0 ? 'fx-pts-done' : 'fx-pts-zero');
-          ptsHtml = '<span class="fx-player-pts ' + cls2 + '">' + pd.pts + (pd.live ? '*' : '') + ' pts</span>';
+          var pcls = pd.live ? 'fx-pts-live' : (pd.pts > 0 ? 'fx-pts-done' : 'fx-pts-zero');
+          ptsHtml = '<span class="fx-player-pts ' + pcls + '">' + pd.pts + (pd.live ? '*' : '') + '</span>';
         } else if (matchPts) {
           ptsHtml = '<span class="fx-player-pts fx-pts-none">—</span>';
         }
-        playerRowsHtml += '<div class="fx-player-row">' +
-          '<span class="fx-team-dot tc-' + pt2 + '"></span>' +
+        rows += '<div class="fx-player-row">' +
+          '<span class="fx-team-dot tc-' + pteam + '"></span>' +
           '<span class="fx-player-name">' + pn + '</span>' +
-          ptsHtml +
-          '</div>';
+          ptsHtml + '</div>';
       }
       bodyHtml += '<div class="fx-owner-block">' +
         '<div class="fx-owner-label ' + ownerClass(owner) + '">' + owner + '</div>' +
-        playerRowsHtml +
-        '</div>';
+        rows + '</div>';
     }
     if (!hasAny) bodyHtml = '<div class="fx-no-players">No drafted players</div>';
 
-    html += '<div class="' + cls + '">' +
+    html += '<div class="' + cardCls + '">' +
       '<div class="fx-header">' +
         '<div class="fx-teams">' + t1badge + '<span class="fx-vs">VS</span>' + t2badge +
           (badge ? '<span style="margin-left:auto">' + badge + '</span>' : '') +
         '</div>' +
-        '<div class="fx-date-time">' + dateLabel + ' &middot; ' + timeLabel + ' &middot; ' + venue + '</div>' +
+        '<div class="fx-date-time">' + dateStr + ' &middot; ' + timeStr + ' &middot; ' + venue + '</div>' +
       '</div>' +
       '<div class="fx-body">' + bodyHtml + '</div>' +
       '</div>';
@@ -964,7 +942,6 @@ function renderFixtures() {
 
   inner.innerHTML = html;
 
-  // Auto-scroll to today/next upcoming
   if (todayIdx > 0) {
     var wrap = document.getElementById('tickerWrap');
     var cards = inner.querySelectorAll('.fx-card');
