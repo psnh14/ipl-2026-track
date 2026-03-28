@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IPL Fantasy 2026 — PAK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  /* ─── TOKENS ─────────────────────────────────────────── */
+  :root {
+    --bg:       #0a0c10;
+    --surface:  #111318;
+    --card:     #181b22;
+    --border:   #252830;
+    --muted:    #3a3f4d;
+    --text:     #e8eaf0;
+    --sub:      #7a7f8e;
+    --accent-p: #f7c520; /* Prakhar – gold   */
+    --accent-a: #4fd1c5; /* Adarsh  – teal   */
+    --accent-k: #f06292; /* Krishna – coral  */
+    --green:    #56cf86;
+    --red:      #f06060;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono:    'DM Mono', monospace;
+    --font-body:    'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── LAYOUT ─────────────────────────────────────────── */
+  .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 20px 60px; }
+
+  /* ─── HEADER ─────────────────────────────────────────── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 28px 0 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .header-left { display: flex; align-items: baseline; gap: 14px; }
+  .logo {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #f7c520 0%, #ff6b35 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+  .season-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--sub);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+  }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--sub);
+  }
+  .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+  .btn-primary {
+    background: var(--accent-p);
+    color: #000;
+    font-weight: 600;
+  }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+  .refresh-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+  .last-sync { font-family: var(--font-mono); font-size: 11px; color: var(--sub); }
+
+  /* ─── LEADERBOARD ────────────────────────────────────── */
+  .lb-section { padding: 32px 0 0; }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: var(--sub);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .lb-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 14px; }
+
+  .lb-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .lb-card:hover { transform: translateY(-2px); }
+  .lb-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .lb-card.p::before { background: var(--accent-p); }
+  .lb-card.a::before { background: var(--accent-a); }
+  .lb-card.k::before { background: var(--accent-k); }
+  .lb-card.p { border-color: rgba(247,197,32,.12); }
+  .lb-card.a { border-color: rgba(79,209,197,.12); }
+  .lb-card.k { border-color: rgba(240,98,146,.12); }
+
+  .lb-rank {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--sub);
+    position: absolute; top: 18px; right: 22px;
+  }
+  .lb-name {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    letter-spacing: .03em;
+    margin-bottom: 2px;
+  }
+  .lb-card.p .lb-name { color: var(--accent-p); }
+  .lb-card.a .lb-name { color: var(--accent-a); }
+  .lb-card.k .lb-name { color: var(--accent-k); }
+
+  .lb-pts {
+    font-family: var(--font-display);
+    font-size: 3.4rem;
+    line-height: 1;
+    letter-spacing: .01em;
+  }
+  .lb-pts-label {
+    font-size: 11px;
+    color: var(--sub);
+    font-family: var(--font-mono);
+    letter-spacing: .06em;
+    margin-top: 2px;
+  }
+  .lb-breakdown { display: flex; gap: 18px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .lb-stat { }
+  .lb-stat-val { font-family: var(--font-mono); font-size: 15px; font-weight: 500; }
+  .lb-stat-lbl { font-size: 10px; color: var(--sub); letter-spacing: .06em; margin-top: 1px; }
+
+  /* ─── SQUADS SECTION ─────────────────────────────────── */
+  .squads-section { padding: 40px 0 0; }
+  .squad-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .squad-tab {
+    font-family: var(--font-body);
+    font-size: 13px; font-weight: 500;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: var(--sub);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all .15s ease;
+    letter-spacing: .02em;
+  }
+  .squad-tab.active-p { color: var(--accent-p); border-bottom-color: var(--accent-p); }
+  .squad-tab.active-a { color: var(--accent-a); border-bottom-color: var(--accent-a); }
+  .squad-tab.active-k { color: var(--accent-k); border-bottom-color: var(--accent-k); }
+  .squad-tab:not(.active-p):not(.active-a):not(.active-k):hover { color: var(--text); }
+
+  .squad-panel { display: none; }
+  .squad-panel.visible { display: block; }
+
+  .player-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .player-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--sub);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0 12px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .player-table th:last-child { text-align: right; }
+  .player-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(37,40,48,.6);
+    vertical-align: middle;
+  }
+  .player-table tbody tr { transition: background .1s; }
+  .player-table tbody tr:hover { background: rgba(255,255,255,.025); }
+  .player-table tbody tr:last-child td { border-bottom: none; }
+
+  .player-name { font-weight: 500; }
+  .player-team {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--sub);
+    background: var(--surface);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    display: inline-block;
+  }
+  .player-role {
+    font-size: 11px;
+    color: var(--sub);
+  }
+  .player-pts {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: right;
+  }
+  .pts-high { color: var(--green); }
+  .pts-zero { color: var(--muted); }
+
+  .runs-cell, .wkts-cell {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--sub);
+  }
+  .wkts-cell .wkt-dot {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent-k);
+    color: #000;
+    font-size: 9px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 16px;
+    margin-right: 3px;
+  }
+
+  /* ─── SUBSTITUTION PANEL ─────────────────────────────── */
+  .sub-section { padding: 40px 0 0; }
+  .sub-toggle-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color .15s;
+    user-select: none;
+  }
+  .sub-toggle-bar:hover { border-color: var(--muted); }
+  .sub-toggle-bar .left { display: flex; align-items: center; gap: 10px; }
+  .sub-toggle-label { font-size: 13px; font-weight: 500; color: var(--sub); }
+  .sub-count-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 10px;
+    color: var(--sub);
+  }
+  .chevron { font-size: 12px; color: var(--sub); transition: transform .2s; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .sub-drawer {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 20px;
+  }
+  .sub-drawer.open { display: block; }
+
+  .sub-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+  @media(max-width:640px){ .sub-form { grid-template-columns: 1fr 1fr; } }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label { font-family: var(--font-mono); font-size: 10px; color: var(--sub); letter-spacing: .08em; text-transform: uppercase; }
+  .form-select, .form-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .form-select:focus, .form-input:focus { border-color: var(--muted); }
+  .form-select option { background: var(--card); }
+
+  .sub-note {
+    font-size: 11.5px;
+    color: var(--sub);
+    margin-top: 14px;
+    line-height: 1.6;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-radius: 6px;
+    border-left: 3px solid var(--muted);
+  }
+
+  /* ─── SUB LOG TABLE ──────────────────────────────────── */
+  .sub-log { margin-top: 20px; }
+  .sub-log-title { font-family: var(--font-mono); font-size: 10px; color: var(--sub); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+  .sub-log-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .sub-log-table th {
+    font-family: var(--font-mono); font-size: 10px; color: var(--sub);
+    text-transform: uppercase; letter-spacing: .08em;
+    text-align: left; padding: 0 10px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sub-log-table td { padding: 9px 10px; border-bottom: 1px solid rgba(37,40,48,.5); color: var(--sub); }
+  .sub-log-table td:first-child { color: var(--text); font-weight: 500; }
+  .sub-log-empty { text-align: center; color: var(--muted); font-size: 12px; padding: 20px 0; font-family: var(--font-mono); }
+
+  /* Status badges */
+  .status-badge {
+    font-family: var(--font-mono); font-size: 10px; padding: 2px 7px;
+    border-radius: 10px; letter-spacing: .04em;
+  }
+  .status-pending  { background: rgba(247,197,32,.15); color: var(--accent-p); border: 1px solid rgba(247,197,32,.25); }
+  .status-executed { background: rgba(86,207,134,.12); color: var(--green);    border: 1px solid rgba(86,207,134,.2); }
+
+  /* ─── LOADING / ERROR STATES ─────────────────────────── */
+  .loading-bar {
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent-p) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  .skeleton {
+    background: var(--surface);
+    border-radius: 4px;
+    animation: skpulse 1.6s ease-in-out infinite;
+  }
+  @keyframes skpulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
+
+  .error-banner {
+    background: rgba(240,96,96,.1);
+    border: 1px solid rgba(240,96,96,.25);
+    color: #f5a0a0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin: 16px 0;
+    display: none;
+  }
+
+  /* ─── TOAST ──────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    opacity: 0; transform: translateY(8px);
+    transition: all .25s ease;
+    z-index: 999;
+    max-width: 320px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error   { border-left: 3px solid var(--red); }
+
+  /* ─── MODAL ──────────────────────────────────────────── */
+  .modal-bg {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+    z-index: 900; align-items: center; justify-content: center;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 480px; width: 90%;
+    box-shadow: 0 24px 64px rgba(0,0,0,.6);
+  }
+  .modal h3 { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 18px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ─── SETUP NOTICE ───────────────────────────────────── */
+  .setup-notice {
+    background: var(--card);
+    border: 1px solid rgba(247,197,32,.2);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin: 24px 0;
+    display: none;
+  }
+  .setup-notice h4 { font-size: 14px; font-weight: 600; color: var(--accent-p); margin-bottom: 6px; }
+  .setup-notice p  { font-size: 12.5px; color: var(--sub); line-height: 1.65; }
+  .setup-notice code {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--surface); padding: 2px 6px; border-radius: 3px;
+    color: var(--accent-a);
+  }
+
+  /* ─── MISC ───────────────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  @media(max-width:480px){
+    .lb-cards { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- loading bar at very top -->
+<div class="loading-bar" id="loadBar" style="display:none"></div>
+
+<div class="wrap">
+
+  <!-- ── HEADER ─────────────────────────────────────────── -->
+  <header>
+    <div class="header-left">
+      <span class="logo">IPL Fantasy</span>
+      <span class="season-badge">2026 · PAK League</span>
+    </div>
+    <div class="header-right">
+      <span class="last-sync" id="lastSync">–</span>
+      <div class="refresh-dot" id="refreshDot" style="display:none"></div>
+      <button class="btn btn-ghost" onclick="loadData()">⟳ Refresh</button>
+      <button class="btn btn-primary" onclick="openSubModal()">+ Sub Request</button>
+    </div>
+  </header>
+
+  <!-- ── SETUP NOTICE (shown when URLs not configured) ──── -->
+  <div class="setup-notice" id="setupNotice">
+    <h4>⚙️ One-time setup needed</h4>
+    <p>
+      Open this file in a text editor and update the two constants near the top of the <code>&lt;script&gt;</code> tag:<br><br>
+      <code>SHEET_CSV_URL</code> — your Google Sheet's published CSV URL (PlayerPool tab)<br>
+      <code>APPS_SCRIPT_URL</code> — your Google Apps Script Web App URL (for sub requests)<br><br>
+      Instructions are in the <strong>Setup Guide</strong> below.
+    </p>
+  </div>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <!-- ── LEADERBOARD ─────────────────────────────────────── -->
+  <section class="lb-section">
+    <div class="section-label">🏆 Leaderboard</div>
+    <div class="lb-cards" id="lbCards">
+      <!-- skeleton -->
+      <div class="lb-card p" style="height:130px"><div class="skeleton" style="width:60%;height:22px;margin-bottom:10px"></div><div class="skeleton" style="width:40%;height:40px"></div></div>
+      <div class="lb-card a" style="height:130px"><div class="skeleton" style="width:60%;height:22px;margin-bottom:10px"></div><div class="skeleton" style="width:40%;height:40px"></div></div>
+      <div class="lb-card k" style="height:130px"><div class="skeleton" style="width:60%;height:22px;margin-bottom:10px"></div><div class="skeleton" style="width:40%;height:40px"></div></div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ── SQUADS ──────────────────────────────────────────── -->
+  <section class="squads-section">
+    <div class="section-label">🧑‍🤝‍🧑 Squads</div>
+    <div class="squad-tabs">
+      <button class="squad-tab active-p" onclick="switchSquad('Prakhar',this)">Prakhar</button>
+      <button class="squad-tab" onclick="switchSquad('Adarsh',this)">Adarsh</button>
+      <button class="squad-tab" onclick="switchSquad('Krishna',this)">Krishna</button>
+    </div>
+    <div id="squad-Prakhar" class="squad-panel visible"></div>
+    <div id="squad-Adarsh"  class="squad-panel"></div>
+    <div id="squad-Krishna" class="squad-panel"></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ── SUBSTITUTIONS ───────────────────────────────────── -->
+  <section class="sub-section">
+    <div class="section-label">🔄 Substitutions</div>
+
+    <!-- collapsible toggle bar (closed by default) -->
+    <div class="sub-toggle-bar" onclick="toggleSubDrawer()">
+      <div class="left">
+        <span class="sub-toggle-label">Sub Requests</span>
+        <span class="sub-count-badge" id="subCountBadge">0 total</span>
+      </div>
+      <span class="chevron" id="subChevron">▼</span>
+    </div>
+    <div class="sub-drawer" id="subDrawer">
+      <div class="sub-log" id="subLog">
+        <div class="sub-log-title">History</div>
+        <div class="sub-log-empty" id="subLogEmpty">No substitutions yet.</div>
+        <table class="sub-log-table" id="subLogTable" style="display:none">
+          <thead><tr>
+            <th>Owner</th><th>Out</th><th>In</th><th>Requested</th><th>Executes</th><th>Status</th>
+          </tr></thead>
+          <tbody id="subLogBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /wrap -->
+
+<!-- ── SUB REQUEST MODAL ───────────────────────────────── -->
+<div class="modal-bg" id="subModal">
+  <div class="modal">
+    <h3>Request Substitution</h3>
+    <p>Substitutions placed before 2 PM IST execute the same day. Placed after 2 PM, they execute the following day at 2 PM.</p>
+
+    <div class="sub-form" style="grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+      <div class="form-group">
+        <label class="form-label">Owner</label>
+        <select class="form-select" id="subOwner" onchange="populateSubOutDropdown()">
+          <option value="">— pick —</option>
+          <option>Prakhar</option>
+          <option>Adarsh</option>
+          <option>Krishna</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Drop player</label>
+        <select class="form-select" id="subOut">
+          <option value="">— select owner first —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Add player</label>
+        <select class="form-select" id="subIn">
+          <option value="">— select owner first —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note (optional)</label>
+        <input class="form-input" id="subNote" type="text" placeholder="e.g. injury cover" maxlength="80" />
+      </div>
+    </div>
+
+    <div class="sub-note">
+      ℹ️ The system records your request but does <strong>not</strong> enforce substitution limits — manage those between yourselves.
+    </div>
+
+    <div class="modal-actions" style="margin-top:18px;">
+      <button class="btn btn-ghost" onclick="closeSubModal()">Cancel</button>
+      <button class="btn btn-primary" id="subSubmitBtn" onclick="submitSub()">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ───────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ⚙️  CONFIGURE THESE TWO URLS BEFORE DEPLOYING
+   ═══════════════════════════════════════════════════════════
+   SHEET_CSV_URL  → Google Sheet → File → Share → Publish to web
+                    → Sheet: PlayerPool, Format: CSV → Copy URL
+   APPS_SCRIPT_URL → Google Apps Script project deployed as
+                    Web App (see setup guide)
+   ═══════════════════════════════════════════════════════════ */
+const SHEET_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=1548351330&single=true&output=csv';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4-HJC__D0Nsxw8b0EI_f2JvifALmwqr_pHqbPBHuHpRfVUlE6KRRVHKQ1hsqdkzWypQ/exec';
+
+/* ── Draft assignments (from your CSV) ─────────────────── */
+const DRAFT = {
+  Prakhar: [
+    "Shubman Gill","Virat Kohli","Yashasvi Jaiswal","Noor Ahmad","Mitchell Marsh",
+    "Prasidh Krishna","Travis Head","Jos Buttler","Rohit Sharma","Trent Boult",
+    "Krunal Pandya","Prabhsimran Singh"
+  ],
+  Adarsh: [
+    "Abhishek Sharma","Sanju Samson","Sai Sudharsan","Varun Chakravarthy","Marco Jansen",
+    "Aiden Markram","KL Rahul","Finn Allen","Axar Patel","Rajat Patidar",
+    "Tilak Varma","Shimron Hetmyer"
+  ],
+  Krishna: [
+    "Jasprit Bumrah","Hardik Pandya","Rashid Khan","Arshdeep Singh","Suryakumar Yadav",
+    "Sunil Narine","Ishan Kishan","Ruturaj Gaikwad","Shreyas Iyer","Nicholas Pooran",
+    "Vaibhav Suryavanshi","Harshal Patel"
+  ]
+};
+
+/* current squads (may be mutated by substitutions) */
+let squads = JSON.parse(JSON.stringify(DRAFT));
+/* full player pool data from sheet */
+let playerPool = {};
+/* substitution log */
+let subLog = JSON.parse(localStorage.getItem('ipl_subs') || '[]');
+
+/* ─── UTILS ─────────────────────────────────────────────── */
+function ownerClass(o){ return o==='Prakhar'?'p':o==='Adarsh'?'a':'k'; }
+function ownerAccent(o){ return o==='Prakhar'?'var(--accent-p)':o==='Adarsh'?'var(--accent-a)':'var(--accent-k)'; }
+
+function toast(msg, type='success'){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  setTimeout(()=>{ el.classList.remove('show'); }, 3200);
+}
+
+function showLoading(show){
+  document.getElementById('loadBar').style.display = show ? 'block' : 'none';
+  document.getElementById('refreshDot').style.display = show ? 'none' : 'block';
+}
+
+function showError(msg){
+  const el = document.getElementById('errorBanner');
+  if(msg){ el.textContent = msg; el.style.display='block'; }
+  else    { el.style.display='none'; }
+}
+
+/* ─── LOAD DATA ─────────────────────────────────────────── */
+async function loadData(){
+  if(SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_CSV_URL_HERE'){
+    document.getElementById('setupNotice').style.display = 'block';
+    renderWithDemoData();
+    return;
+  }
+  showLoading(true);
+  showError(null);
+  try {
+    const url = SHEET_CSV_URL + '&t=' + Date.now(); // cache-bust
+    const resp = await fetch(url);
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    parseCSV(text);
+    document.getElementById('lastSync').textContent = 'Synced ' + new Date().toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'}) + ' IST';
+    renderAll();
+  } catch(e){
+    showError('Could not load scores from Google Sheets. Showing last cached data. (' + e.message + ')');
+    renderAll();
+  }
+  showLoading(false);
+}
+
+function parseCSV(text){
+  // columns: Player Name, Team, Role, Runs, Wickets, Points, Owner
+  const lines = text.trim().split('\n');
+  playerPool = {};
+  for(let i=1;i<lines.length;i++){
+    const cols = lines[i].split(',');
+    if(!cols[0]) continue;
+    const name = cols[0].trim().replace(/^"|"$/g,'');
+    playerPool[name] = {
+      team:    (cols[1]||'').trim().replace(/^"|"$/g,''),
+      role:    (cols[2]||'').trim().replace(/^"|"$/g,''),
+      runs:    parseFloat(cols[3]) || 0,
+      wickets: parseFloat(cols[4]) || 0,
+      points:  parseFloat(cols[5]) || 0,
+    };
+  }
+}
+
+/* ─── DEMO DATA (for when URLs not configured) ──────────── */
+function renderWithDemoData(){
+  // populate with zeros so at least the UI renders
+  Object.values(squads).flat().forEach(n => {
+    if(!playerPool[n]) playerPool[n] = { team:'–', role:'–', runs:0, wickets:0, points:0 };
+  });
+  document.getElementById('lastSync').textContent = 'Demo mode';
+  renderAll();
+}
+
+/* ─── RENDER ─────────────────────────────────────────────── */
+function renderAll(){
+  renderLeaderboard();
+  renderSquads();
+  renderSubLog();
+}
+
+function renderLeaderboard(){
+  const totals = {};
+  const runTotals = {};
+  const wktTotals = {};
+  ['Prakhar','Adarsh','Krishna'].forEach(o => {
+    let pts=0, runs=0, wkts=0;
+    squads[o].forEach(n => {
+      const p = playerPool[n];
+      if(p){ pts += p.points; runs += p.runs; wkts += p.wickets; }
+    });
+    totals[o]=pts; runTotals[o]=runs; wktTotals[o]=wkts;
+  });
+
+  const sorted = ['Prakhar','Adarsh','Krishna'].sort((a,b) => totals[b]-totals[a]);
+  const rankLabels = ['1ST','2ND','3RD'];
+
+  const html = sorted.map((owner,i) => `
+    <div class="lb-card ${ownerClass(owner)}">
+      <span class="lb-rank">${rankLabels[i]}</span>
+      <div class="lb-name">${owner}</div>
+      <div class="lb-pts">${Math.round(totals[owner]).toLocaleString()}</div>
+      <div class="lb-pts-label">PTS</div>
+      <div class="lb-breakdown">
+        <div class="lb-stat">
+          <div class="lb-stat-val">${Math.round(runTotals[owner]).toLocaleString()}</div>
+          <div class="lb-stat-lbl">RUNS</div>
+        </div>
+        <div class="lb-stat">
+          <div class="lb-stat-val">${Math.round(wktTotals[owner])}</div>
+          <div class="lb-stat-lbl">WICKETS</div>
+        </div>
+        <div class="lb-stat">
+          <div class="lb-stat-val">${squads[owner].length}</div>
+          <div class="lb-stat-lbl">PLAYERS</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('lbCards').innerHTML = html;
+}
+
+function renderSquads(){
+  ['Prakhar','Adarsh','Krishna'].forEach(owner => {
+    const players = squads[owner].map(name => {
+      const p = playerPool[name] || { team:'?', role:'?', runs:0, wickets:0, points:0 };
+      return { name, ...p };
+    }).sort((a,b) => b.points - a.points);
+
+    const rows = players.map(p => `
+      <tr>
+        <td class="player-name">${p.name}</td>
+        <td><span class="player-team">${p.team}</span></td>
+        <td class="player-role">${p.role}</td>
+        <td class="runs-cell">${Math.round(p.runs)}</td>
+        <td class="wkts-cell">${p.wickets>0?`<span class="wkt-dot">${Math.round(p.wickets)}</span>`:'–'}</td>
+        <td class="player-pts ${p.points>0?'pts-high':'pts-zero'}">${Math.round(p.points)}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById(`squad-${owner}`).innerHTML = `
+      <table class="player-table">
+        <thead><tr>
+          <th>Player</th><th>Team</th><th>Role</th><th>Runs</th><th>Wkts</th><th>Pts</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  });
+}
+
+/* ─── SQUAD TABS ─────────────────────────────────────────── */
+let activeOwner = 'Prakhar';
+function switchSquad(owner, btn){
+  activeOwner = owner;
+  // hide all panels
+  ['Prakhar','Adarsh','Krishna'].forEach(o => {
+    document.getElementById(`squad-${o}`).classList.remove('visible');
+  });
+  document.getElementById(`squad-${owner}`).classList.add('visible');
+  // update tab styles
+  document.querySelectorAll('.squad-tab').forEach(t => {
+    t.className = 'squad-tab';
+  });
+  btn.classList.add(`active-${ownerClass(owner)}`);
+}
+
+/* ─── SUB DRAWER TOGGLE ──────────────────────────────────── */
+function toggleSubDrawer(){
+  const drawer = document.getElementById('subDrawer');
+  const chevron = document.getElementById('subChevron');
+  const isOpen = drawer.classList.contains('open');
+  drawer.classList.toggle('open');
+  chevron.classList.toggle('open', !isOpen);
+}
+
+/* ─── SUB MODAL ──────────────────────────────────────────── */
+function openSubModal(){
+  document.getElementById('subOwner').value = '';
+  document.getElementById('subOut').innerHTML = '<option value="">— select owner first —</option>';
+  document.getElementById('subIn').innerHTML  = '<option value="">— select owner first —</option>';
+  document.getElementById('subNote').value = '';
+  document.getElementById('subModal').classList.add('open');
+}
+function closeSubModal(){ document.getElementById('subModal').classList.remove('open'); }
+
+function populateSubOutDropdown(){
+  const owner = document.getElementById('subOwner').value;
+  const outSel = document.getElementById('subOut');
+  const inSel  = document.getElementById('subIn');
+
+  if(!owner){ 
+    outSel.innerHTML = '<option value="">— select owner first —</option>';
+    inSel.innerHTML  = '<option value="">— select owner first —</option>';
+    return;
+  }
+
+  // Dropdown for OUT: owner's current squad
+  outSel.innerHTML = '<option value="">— pick player to drop —</option>' +
+    squads[owner].map(n => `<option>${n}</option>`).join('');
+
+  // Dropdown for IN: all players NOT in any squad
+  const allInSquads = new Set(Object.values(squads).flat());
+  const available = Object.keys(playerPool).filter(n => !allInSquads.has(n));
+  if(available.length === 0){
+    inSel.innerHTML = '<option value="">— all players drafted —</option>';
+  } else {
+    inSel.innerHTML = '<option value="">— pick player to add —</option>' +
+      available.sort().map(n => `<option>${n}</option>`).join('');
+  }
+}
+
+async function submitSub(){
+  const owner  = document.getElementById('subOwner').value;
+  const outP   = document.getElementById('subOut').value;
+  const inP    = document.getElementById('subIn').value;
+  const note   = document.getElementById('subNote').value.trim();
+
+  if(!owner || !outP || !inP){ toast('Please fill in all fields.','error'); return; }
+
+  const btn = document.getElementById('subSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  const nowIST = new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'});
+  const execDate = getExecutionDate();
+
+  const record = { owner, out: outP, in: inP, note, requested: nowIST, executes: execDate, status: 'pending', id: Date.now() };
+
+  try {
+    if(APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_WEBAPP_URL_HERE'){
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record)
+      });
+    }
+    // Save locally regardless
+    subLog.push(record);
+    localStorage.setItem('ipl_subs', JSON.stringify(subLog));
+
+    // Apply to local squads immediately (will be "official" after 2pm)
+    squads[owner] = squads[owner].map(n => n === outP ? inP : n);
+    renderAll();
+    renderSubLog();
+    closeSubModal();
+    toast(`✓ Sub request logged: ${outP} → ${inP} (executes ${execDate})`);
+  } catch(e){
+    toast('Could not reach Apps Script. Sub saved locally only.', 'error');
+    subLog.push(record);
+    localStorage.setItem('ipl_subs', JSON.stringify(subLog));
+    squads[owner] = squads[owner].map(n => n === outP ? inP : n);
+    renderAll();
+    renderSubLog();
+    closeSubModal();
+  }
+
+  btn.disabled = false; btn.textContent = 'Submit Request';
+}
+
+function getExecutionDate(){
+  const now = new Date();
+  // IST = UTC+5:30
+  const istOffset = 5.5 * 60; // minutes
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+  const ist = new Date(utcMs + istOffset * 60000);
+  const cutoff2pm = new Date(ist); cutoff2pm.setHours(14,0,0,0);
+  // If before 2pm IST today → executes today at 2pm
+  // If after → executes tomorrow at 2pm
+  const execDay = ist < cutoff2pm ? ist : new Date(ist.getTime() + 86400000);
+  return execDay.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Kolkata'}) + ' 2:00 PM IST';
+}
+
+function renderSubLog(){
+  const badge = document.getElementById('subCountBadge');
+  badge.textContent = subLog.length + ' total';
+
+  const tbody = document.getElementById('subLogBody');
+  const empty = document.getElementById('subLogEmpty');
+  const table = document.getElementById('subLogTable');
+
+  if(subLog.length === 0){
+    empty.style.display = 'block'; table.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none'; table.style.display = 'table';
+
+  tbody.innerHTML = [...subLog].reverse().map(s => `
+    <tr>
+      <td style="color:${ownerAccent(s.owner)}">${s.owner}</td>
+      <td>${s.out}</td>
+      <td>${s.in}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${s.requested}</td>
+      <td style="font-family:var(--font-mono);font-size:11px">${s.executes}</td>
+      <td><span class="status-badge status-${s.status||'pending'}">${s.status||'pending'}</span></td>
+    </tr>
+  `).join('');
+}
+
+/* ─── CLOSE MODAL ON BG CLICK ───────────────────────────── */
+document.getElementById('subModal').addEventListener('click', function(e){
+  if(e.target === this) closeSubModal();
+});
+
+/* ─── AUTO-REFRESH every 5 min ─────────────────────────── */
+setInterval(loadData, 5 * 60 * 1000);
+
+/* ─── INIT ───────────────────────────────────────────────── */
+loadData();
+</script>
+
+</body>
+</html>
