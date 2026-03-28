@@ -109,6 +109,111 @@ header{display:flex;align-items:center;justify-content:space-between;padding:28p
 .toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}
 hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 @media(max-width:480px){.lb-cards{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}}
+
+/* ── FIXTURE TICKER ─────────────────────────────────────── */
+.fixtures-section { padding: 40px 0 0; }
+.ticker-wrap {
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  cursor: grab;
+}
+.ticker-wrap:active { cursor: grabbing; }
+.ticker-wrap::-webkit-scrollbar { height: 4px; }
+.ticker-wrap::-webkit-scrollbar-track { background: transparent; }
+.ticker-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.ticker-inner {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  padding: 4px 2px 4px;
+}
+.fx-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  width: 240px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  transition: box-shadow .15s, border-color .15s;
+  scroll-snap-align: start;
+}
+.fx-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.09); }
+.fx-card.fx-past { opacity: .5; }
+.fx-card.fx-today { border-color: var(--accent-a); box-shadow: 0 0 0 2px rgba(37,99,235,.12); }
+.fx-matchup {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: .03em;
+  color: var(--text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fx-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--sub);
+  margin-bottom: 10px;
+  letter-spacing: .03em;
+}
+.fx-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+.fx-no-players {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px 0;
+}
+.fx-owner-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 5px; }
+.fx-owner-row:last-child { margin-bottom: 0; }
+.fx-owner-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  min-width: 44px;
+  padding-top: 2px;
+  letter-spacing: .04em;
+}
+.fx-owner-name.p { color: var(--accent-p); }
+.fx-owner-name.a { color: var(--accent-a); }
+.fx-owner-name.k { color: var(--accent-k); }
+.fx-players { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.fx-player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+.fx-team-pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: .04em;
+  flex-shrink: 0;
+  color: #fff;
+}
+/* Team colours */
+.team-RCB { background: #c1121f; }
+.team-CSK { background: #e6a817; color: #000 !important; }
+.team-MI  { background: #004ba0; }
+.team-GT  { background: #1b2a6b; }
+.team-SRH { background: #e8610a; }
+.team-KKR { background: #3a225d; }
+.team-RR  { background: #d4156b; }
+.team-DC  { background: #0078bc; }
+.team-PBKS{ background: #b91c1c; }
+.team-LSG { background: #5a8a00; }
+
 </style>
 </head>
 <body>
@@ -162,6 +267,16 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
       </table>
     </div>
   </section>
+
+  <hr class="divider" />
+
+  <section class="fixtures-section">
+    <div class="section-label">&#128197; Fixtures</div>
+    <div class="ticker-wrap" id="tickerWrap">
+      <div class="ticker-inner" id="tickerInner"></div>
+    </div>
+  </section>
+
 </div>
 
 <div class="modal-bg" id="subModal">
@@ -417,7 +532,7 @@ function renderSubLog(){
   document.getElementById('subLogBody').innerHTML=rows;
 }
 
-function renderAll(){renderLeaderboard();renderSquads();renderSubLog();}
+function renderAll(){renderLeaderboard();renderSquads();renderSubLog();renderFixtures();}
 
 function switchSquad(owner,btn){
   ['Prakhar','Adarsh','Krishna'].forEach(function(o){document.getElementById('squad-'+o).classList.remove('visible');});
@@ -502,6 +617,237 @@ async function loadData(){
   document.getElementById('lastSync').textContent='Synced '+new Date().toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'})+' IST';
   document.getElementById('loadBar').style.display='none';
   document.getElementById('refreshDot').style.display='block';
+}
+
+
+/* ── TEAM COLOURS ───────────────────────────────────────── */
+var TEAM_COLORS = {
+  RCB:'#c1121f', CSK:'#e6a817', MI:'#004ba0', GT:'#1b2a6b',
+  SRH:'#e8610a', KKR:'#3a225d', RR:'#d4156b', DC:'#0078bc',
+  PBKS:'#b91c1c', LSG:'#5a8a00'
+};
+var TEAM_TEXT = { CSK: '#000' };
+
+/* ── PLAYER → TEAM MAP (from your draft + PlayerPool) ───── */
+var PLAYER_TEAM = {
+  // Prakhar
+  'Shubman Gill':'GT','Virat Kohli':'RCB','Yashasvi Jaiswal':'RR',
+  'Noor Ahmad':'CSK','Mitchell Marsh':'LSG','Prasidh Krishna':'GT',
+  'Travis Head':'SRH','Jos Buttler':'GT','Rohit Sharma':'MI',
+  'Trent Boult':'MI','Krunal Pandya':'RCB','Prabhsimran Singh':'PBKS',
+  // Adarsh
+  'Abhishek Sharma':'SRH','Sanju Samson':'CSK','Sai Sudharsan':'GT',
+  'Varun Chakravarthy':'KKR','Marco Jansen':'PBKS','Aiden Markram':'LSG',
+  'KL Rahul':'DC','Finn Allen':'KKR','Axar Patel':'DC',
+  'Rajat Patidar':'RCB','Tilak Varma':'MI','Shimron Hetmyer':'RR',
+  // Krishna
+  'Jasprit Bumrah':'MI','Hardik Pandya':'MI','Rashid Khan':'GT',
+  'Arshdeep Singh':'PBKS','Suryakumar Yadav':'MI','Sunil Narine':'KKR',
+  'Ishan Kishan':'SRH','Ruturaj Gaikwad':'CSK','Shreyas Iyer':'PBKS',
+  'Nicholas Pooran':'LSG','Vaibhav Suryavanshi':'RR','Harshal Patel':'SRH'
+};
+
+/* ── FULL IPL 2026 LEAGUE SCHEDULE (70 matches) ─────────── */
+/* Format: [date YYYY-MM-DD, time HH:MM, team1, team2, venue] */
+var FIXTURES = [
+  ['2026-03-28','19:30','RCB','SRH','Bengaluru'],
+  ['2026-03-29','19:30','MI','KKR','Mumbai'],
+  ['2026-03-30','19:30','RR','CSK','Guwahati'],
+  ['2026-03-31','19:30','PBKS','GT','Mohali'],
+  ['2026-04-01','19:30','LSG','DC','Lucknow'],
+  ['2026-04-02','19:30','KKR','SRH','Kolkata'],
+  ['2026-04-03','19:30','CSK','PBKS','Chennai'],
+  ['2026-04-04','15:30','DC','MI','Delhi'],
+  ['2026-04-04','19:30','GT','RR','Ahmedabad'],
+  ['2026-04-05','15:30','SRH','LSG','Hyderabad'],
+  ['2026-04-05','19:30','RCB','CSK','Bengaluru'],
+  ['2026-04-06','19:30','KKR','PBKS','Kolkata'],
+  ['2026-04-07','19:30','RR','MI','Guwahati'],
+  ['2026-04-08','19:30','DC','GT','Delhi'],
+  ['2026-04-09','19:30','KKR','LSG','Kolkata'],
+  ['2026-04-10','19:30','RCB','RR','Guwahati'],
+  ['2026-04-11','15:30','SRH','PBKS','Chandigarh'],
+  ['2026-04-11','19:30','CSK','DC','Chennai'],
+  ['2026-04-12','15:30','LSG','GT','Lucknow'],
+  ['2026-04-12','19:30','MI','RCB','Mumbai'],
+  ['2026-04-13','19:30','SRH','RR','Hyderabad'],
+  ['2026-04-14','15:30','CSK','KKR','Chennai'],
+  ['2026-04-14','19:30','DC','LSG','Delhi'],
+  ['2026-04-15','19:30','RCB','LSG','Bengaluru'],
+  ['2026-04-16','19:30','MI','PBKS','Mumbai'],
+  ['2026-04-17','19:30','GT','KKR','Ahmedabad'],
+  ['2026-04-18','15:30','RCB','DC','Bengaluru'],
+  ['2026-04-18','19:30','SRH','CSK','Hyderabad'],
+  ['2026-04-19','15:30','KKR','RR','Kolkata'],
+  ['2026-04-19','19:30','PBKS','LSG','Chandigarh'],
+  ['2026-04-20','19:30','GT','MI','Ahmedabad'],
+  ['2026-04-21','19:30','SRH','DC','Hyderabad'],
+  ['2026-04-22','19:30','LSG','RR','Lucknow'],
+  ['2026-04-23','19:30','MI','CSK','Mumbai'],
+  ['2026-04-24','19:30','RCB','GT','Bengaluru'],
+  ['2026-04-25','15:30','DC','PBKS','Delhi'],
+  ['2026-04-25','19:30','RR','SRH','Jaipur'],
+  ['2026-04-26','15:30','GT','CSK','Ahmedabad'],
+  ['2026-04-26','19:30','LSG','KKR','Lucknow'],
+  ['2026-04-27','19:30','RCB','DC','Delhi'],
+  ['2026-04-28','19:30','RR','PBKS','Chandigarh'],
+  ['2026-04-29','19:30','SRH','MI','Mumbai'],
+  ['2026-04-30','19:30','RCB','GT','Ahmedabad'],
+  ['2026-05-01','19:30','DC','RR','Jaipur'],
+  ['2026-05-02','19:30','MI','CSK','Chennai'],
+  ['2026-05-03','15:30','KKR','SRH','Hyderabad'],
+  ['2026-05-03','19:30','PBKS','GT','Ahmedabad'],
+  ['2026-05-04','19:30','LSG','DC','Delhi'],
+  ['2026-05-05','19:30','CSK','DC','Delhi'],
+  ['2026-05-06','19:30','SRH','PBKS','Hyderabad'],
+  ['2026-05-07','19:30','RCB','LSG','Lucknow'],
+  ['2026-05-08','19:30','DC','KKR','Delhi'],
+  ['2026-05-09','15:30','CSK','MI','Chennai'],
+  ['2026-05-09','19:30','GT','RR','Jaipur'],
+  ['2026-05-10','15:30','RCB','MI','Raipur'],
+  ['2026-05-10','19:30','LSG','CSK','Chennai'],
+  ['2026-05-11','19:30','DC','PBKS','Dharamsala'],
+  ['2026-05-12','19:30','SRH','GT','Ahmedabad'],
+  ['2026-05-13','19:30','RCB','KKR','Raipur'],
+  ['2026-05-14','19:30','MI','CSK','Chennai'],
+  ['2026-05-15','19:30','LSG','CSK','Lucknow'],
+  ['2026-05-16','19:30','GT','KKR','Kolkata'],
+  ['2026-05-17','15:30','RCB','PBKS','Dharamsala'],
+  ['2026-05-17','19:30','DC','RR','Delhi'],
+  ['2026-05-18','19:30','SRH','CSK','Chennai'],
+  ['2026-05-19','19:30','LSG','RR','Jaipur'],
+  ['2026-05-20','19:30','MI','KKR','Kolkata'],
+  ['2026-05-21','19:30','GT','CSK','Chennai'],
+  ['2026-05-22','19:30','RCB','SRH','Hyderabad'],
+  ['2026-05-23','15:30','RR','MI','Mumbai'],
+  ['2026-05-23','19:30','DC','KKR','Kolkata'],
+  ['2026-05-24','15:30','KKR','DC','Kolkata'],
+  ['2026-05-24','19:30','PBKS','LSG','Lucknow']
+];
+
+/* ── RENDER FIXTURE TICKER ───────────────────────────────── */
+function renderFixtures() {
+  var inner = document.getElementById('tickerInner');
+  if (!inner) return;
+
+  // Build active squad map: player -> owner (using computeSquad for accuracy)
+  var playerOwner = {};
+  var owners = ['Prakhar','Adarsh','Krishna'];
+  for (var oi = 0; oi < owners.length; oi++) {
+    var sq = computeSquad(owners[oi]).filter(function(p){ return !p.retired; });
+    for (var pi = 0; pi < sq.length; pi++) {
+      playerOwner[sq[pi].name] = owners[oi];
+    }
+  }
+
+  // Today's date in IST as YYYY-MM-DD
+  var now = new Date();
+  var istOffset = 5.5 * 60 * 60000;
+  var ist = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + istOffset);
+  var todayStr = ist.getFullYear() + '-' +
+    String(ist.getMonth()+1).padStart(2,'0') + '-' +
+    String(ist.getDate()).padStart(2,'0');
+
+  var html = '';
+  var todayIdx = -1;
+
+  for (var fi = 0; fi < FIXTURES.length; fi++) {
+    var fx    = FIXTURES[fi];
+    var fdate = fx[0], ftime = fx[1], t1 = fx[2], t2 = fx[3], venue = fx[4];
+    var isPast   = fdate < todayStr;
+    var isToday  = fdate === todayStr;
+
+    // Format date nicely
+    var d = new Date(fdate + 'T00:00:00');
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var dateLabel = days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
+    var timeLabel = (parseInt(ftime) > 12 ? parseInt(ftime)-12 : parseInt(ftime)) +
+      ':' + ftime.split(':')[1] + ' PM IST';
+
+    // Find drafted players in this fixture, grouped by owner
+    var ownerPlayers = { Prakhar:[], Adarsh:[], Krishna:[] };
+    for (var pname in playerOwner) {
+      var pteam = PLAYER_TEAM[pname];
+      if (pteam === t1 || pteam === t2) {
+        ownerPlayers[playerOwner[pname]].push({ name: pname, team: pteam });
+      }
+    }
+    var hasAny = ownerPlayers.Prakhar.length + ownerPlayers.Adarsh.length + ownerPlayers.Krishna.length > 0;
+
+    // Card class
+    var cardClass = 'fx-card';
+    if (isPast)  cardClass += ' fx-past';
+    if (isToday) { cardClass += ' fx-today'; todayIdx = fi; }
+    if (!isPast && todayIdx === -1 && !isToday) {
+      // Mark first upcoming as scroll target
+      if (todayIdx === -1) todayIdx = fi;
+    }
+
+    // Build player rows per owner
+    var playerRowsHtml = '';
+    var ownerList = ['Prakhar','Adarsh','Krishna'];
+    for (var ow = 0; ow < ownerList.length; ow++) {
+      var owner = ownerList[ow];
+      var players = ownerPlayers[owner];
+      if (players.length === 0) continue;
+      var chipsHtml = '';
+      for (var cp = 0; cp < players.length; cp++) {
+        var pteam = players[cp].team;
+        var txtColor = TEAM_TEXT[pteam] ? TEAM_TEXT[pteam] : '#fff';
+        chipsHtml += '<div class="fx-player-chip">' +
+          '<span class="fx-team-pill team-' + pteam + '" style="color:' + txtColor + '">' + pteam + '</span>' +
+          '<span>' + players[cp].name + '</span>' +
+          '</div>';
+      }
+      playerRowsHtml += '<div class="fx-owner-row">' +
+        '<span class="fx-owner-name ' + ownerClass(owner) + '">' + owner.toUpperCase().slice(0,3) + '</span>' +
+        '<div class="fx-players">' + chipsHtml + '</div>' +
+        '</div>';
+    }
+    if (!hasAny) {
+      playerRowsHtml = '<div class="fx-no-players">No drafted players</div>';
+    }
+
+    html += '<div class="' + cardClass + '" data-idx="' + fi + '">' +
+      '<div class="fx-matchup">' + t1 + ' vs ' + t2 + '</div>' +
+      '<div class="fx-meta">' + dateLabel + ' &middot; ' + timeLabel + ' &middot; ' + venue + '</div>' +
+      '<hr class="fx-divider">' +
+      playerRowsHtml +
+      '</div>';
+  }
+
+  inner.innerHTML = html;
+
+  // Auto-scroll to today/next upcoming
+  if (todayIdx > 0) {
+    var wrap = document.getElementById('tickerWrap');
+    var cards = inner.querySelectorAll('.fx-card');
+    if (cards[todayIdx]) {
+      var scrollTo = cards[todayIdx].offsetLeft - 20;
+      wrap.scrollLeft = scrollTo;
+    }
+  }
+
+  // Drag-to-scroll
+  initDragScroll(document.getElementById('tickerWrap'));
+}
+
+function initDragScroll(el) {
+  if (!el || el._dragInit) return;
+  el._dragInit = true;
+  var isDown = false, startX, scrollLeft;
+  el.addEventListener('mousedown', function(e) {
+    isDown = true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft;
+  });
+  el.addEventListener('mouseleave', function() { isDown = false; });
+  el.addEventListener('mouseup',    function() { isDown = false; });
+  el.addEventListener('mousemove',  function(e) {
+    if (!isDown) return;
+    e.preventDefault();
+    var x = e.pageX - el.offsetLeft;
+    el.scrollLeft = scrollLeft - (x - startX);
+  });
 }
 
 setInterval(loadData,300000);
