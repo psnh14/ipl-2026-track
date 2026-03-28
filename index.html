@@ -301,7 +301,16 @@ function computeSquad(owner){
     for(var j=0;j<active.length;j++){if(active[j].name===s.out){idx=j;break;}}
     if(idx!==-1){
       var pool=playerPool[s.out]||{};
-      retired.push({name:s.out,team:pool.team||'-',role:pool.role||'-',runs:s.outRunsLocked,wickets:s.outWktsLocked,points:s.outRunsLocked+s.outWktsLocked*25,retired:true});
+      // Use the baseline this player carried when they joined the squad (0 for original
+      // draft picks, inRunsBaseline for players who were themselves subbed in).
+      // This ensures chain subs (A->B->C) only count B's runs while on the squad.
+      var prevRb=active[idx].rb||0;
+      var prevWb=active[idx].wb||0;
+      var effRuns=s.outRunsLocked-prevRb;
+      var effWkts=s.outWktsLocked-prevWb;
+      retired.push({name:s.out,team:pool.team||'-',role:pool.role||'-',
+        runs:Math.max(0,effRuns),wickets:Math.max(0,effWkts),
+        points:Math.max(0,effRuns)+Math.max(0,effWkts)*25,retired:true});
       active.splice(idx,1);
     }
     active.push({name:s.in,rb:s.inRunsBaseline,wb:s.inWktsBaseline,subbed:true,pending:false});
