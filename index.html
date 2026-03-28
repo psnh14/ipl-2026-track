@@ -654,6 +654,13 @@ let playerPool  = {};   // name → { team, role, runs, wickets, points }
 let executedSubs = [];  // parsed from Substitutions sheet CSV (status=executed)
 let pendingSubs  = [];  // status=pending, stored in localStorage
 
+/* Seed playerPool with all draft players at zero so UI always renders */
+function seedPlayerPool(){
+  Object.values(DRAFT).flat().forEach(name => {
+    if(!playerPool[name]) playerPool[name] = { team:'–', role:'–', runs:0, wickets:0, points:0 };
+  });
+}
+
 /* ── UTILS ─────────────────────────────────────────────────── */
 function ownerClass(o)  { return o==='Prakhar'?'p':o==='Adarsh'?'a':'k'; }
 function ownerAccent(o) { return o==='Prakhar'?'var(--accent-p)':o==='Adarsh'?'var(--accent-a)':'var(--accent-k)'; }
@@ -677,6 +684,7 @@ function showError(msg){
 /* ── LOAD DATA ─────────────────────────────────────────────── */
 async function loadData(){
   showLoading(true); showError(null);
+  seedPlayerPool(); // ensure UI always has something to render
   try {
     // 1. Load PlayerPool
     const r1 = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
