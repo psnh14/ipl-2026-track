@@ -254,25 +254,42 @@ function parsePlayerPool(text){
   }
 }
 
+var sheetPendingSubs=[];
+
 function parseSubsCSV(text){
-  executedSubs=[];
+  executedSubs=[];sheetPendingSubs=[];
   var lines=text.trim().split('\n');
   for(var i=1;i<lines.length;i++){
     var c=parseCSVLine(lines[i]);
     if(!c[0]) continue;
-    if((c[6]||'').trim().toLowerCase()==='executed'){
+    var status=(c[6]||'').trim().toLowerCase();
+    if(status==='executed'){
       executedSubs.push({owner:c[0],out:c[1],in:c[2],requested:c[4],executes:c[5],status:'executed',
         outRunsLocked:parseFloat(c[7])||0,outWktsLocked:parseFloat(c[8])||0,
         inRunsBaseline:parseFloat(c[9])||0,inWktsBaseline:parseFloat(c[10])||0});
+    } else if(status==='pending'){
+      sheetPendingSubs.push({owner:c[0],out:c[1],in:c[2],requested:c[4],executes:c[5],status:'pending',id:c[4]});
     }
   }
 }
 
 function getPendingSubs(){
-  var all=JSON.parse(localStorage.getItem('ipl_subs')||'[]');
-  var keys={};
-  for(var i=0;i<executedSubs.length;i++) keys[executedSubs[i].owner+'|'+executedSubs[i].out+'|'+executedSubs[i].in]=true;
-  return all.filter(function(s){return !keys[s.owner+'|'+s.out+'|'+s.in];});
+  // Keys of already-executed subs
+  var exKeys={};
+  for(var i=0;i<executedSubs.length;i++) exKeys[executedSubs[i].owner+'|'+executedSubs[i].out+'|'+executedSubs[i].in]=true;
+
+  // Sheet pending subs (universal - from Google Sheets)
+  var merged=sheetPendingSubs.filter(function(s){return !exKeys[s.owner+'|'+s.out+'|'+s.in];});
+
+  // localStorage subs (fallback for ones not yet synced to sheet)
+  var sheetKeys={};
+  for(var i=0;i<merged.length;i++) sheetKeys[merged[i].owner+'|'+merged[i].out+'|'+merged[i].in]=true;
+  var local=JSON.parse(localStorage.getItem('ipl_subs')||'[]');
+  local.forEach(function(s){
+    var k=s.owner+'|'+s.out+'|'+s.in;
+    if(!exKeys[k]&&!sheetKeys[k]) merged.push(s);
+  });
+  return merged;
 }
 
 function computeSquad(owner){
