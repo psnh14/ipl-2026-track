@@ -3,1098 +3,483 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>IPL Fantasy 2026 — PAK</title>
+<title>IPL Fantasy 2026 - Draft League</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
 <style>
-  /* ─── TOKENS ─────────────────────────────────────────── */
-  :root {
-    --bg:       #f0f3f9;
-    --surface:  #ffffff;
-    --card:     #ffffff;
-    --border:   #dde2ee;
-    --muted:    #b8c0d4;
-    --text:     #1a1f2e;
-    --sub:      #64708a;
-    --accent-p: #1e3a8a; /* Prakhar – deep navy */
-    --accent-a: #2563eb; /* Adarsh  – blue      */
-    --accent-k: #e11d6a; /* Krishna – pink-red  */
-    --green:    #16a34a;
-    --red:      #dc2626;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-mono:    'DM Mono', monospace;
-    --font-body:    'DM Sans', sans-serif;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ─── NOISE OVERLAY ─────────────────────────────────── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ─── LAYOUT ─────────────────────────────────────────── */
-  .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 20px 60px; }
-
-  /* ─── HEADER ─────────────────────────────────────────── */
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 28px 0 24px;
-    border-bottom: 1px solid var(--border);
-    gap: 12px;
-  }
-  .header-left { display: flex; align-items: baseline; gap: 14px; }
-  .logo {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 6vw, 3.2rem);
-    letter-spacing: 0.04em;
-    background: linear-gradient(135deg, #f7c520 0%, #ff6b35 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    line-height: 1;
-  }
-  .season-badge {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--sub);
-    border: 1px solid var(--border);
-    padding: 3px 8px;
-    border-radius: 4px;
-    letter-spacing: 0.08em;
-  }
-  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all .15s ease;
-    border: 1px solid transparent;
-    white-space: nowrap;
-  }
-  .btn-ghost {
-    background: transparent;
-    border-color: var(--border);
-    color: var(--sub);
-  }
-  .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
-  .btn-primary {
-    background: var(--accent-p);
-    color: #fff;
-    font-weight: 600;
-  }
-  .btn-primary:hover { filter: brightness(1.1); }
-  .btn-sm { padding: 5px 11px; font-size: 12px; }
-
-  .refresh-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: pulse 2.4s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
-  .last-sync { font-family: var(--font-mono); font-size: 11px; color: var(--sub); }
-
-  /* ─── LEADERBOARD ────────────────────────────────────── */
-  .lb-section { padding: 32px 0 0; }
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: .14em;
-    color: var(--sub);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-
-  .lb-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 14px; }
-
-  .lb-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px 24px;
-    position: relative;
-    overflow: hidden;
-    transition: transform .15s ease, border-color .15s ease;
-  }
-  .lb-card:hover { transform: translateY(-2px); }
-  .lb-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-  .lb-card.p::before { background: var(--accent-p); }
-  .lb-card.a::before { background: var(--accent-a); }
-  .lb-card.k::before { background: var(--accent-k); }
-  .lb-card.p { border-color: rgba(30,58,138,.15); }
-  .lb-card.a { border-color: rgba(37,99,235,.15); }
-  .lb-card.k { border-color: rgba(225,29,106,.15); }
-
-  .lb-rank {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    color: var(--sub);
-    position: absolute; top: 18px; right: 22px;
-  }
-  .lb-name {
-    font-family: var(--font-display);
-    font-size: 1.9rem;
-    letter-spacing: .03em;
-    margin-bottom: 2px;
-  }
-  .lb-card.p .lb-name { color: var(--accent-p); }
-  .lb-card.a .lb-name { color: var(--accent-a); }
-  .lb-card.k .lb-name { color: var(--accent-k); }
-
-  .lb-pts {
-    font-family: var(--font-display);
-    font-size: 3.4rem;
-    line-height: 1;
-    letter-spacing: .01em;
-  }
-  .lb-pts-label {
-    font-size: 11px;
-    color: var(--sub);
-    font-family: var(--font-mono);
-    letter-spacing: .06em;
-    margin-top: 2px;
-  }
-  .lb-breakdown { display: flex; gap: 18px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
-  .lb-stat { }
-  .lb-stat-val { font-family: var(--font-mono); font-size: 15px; font-weight: 500; }
-  .lb-stat-lbl { font-size: 10px; color: var(--sub); letter-spacing: .06em; margin-top: 1px; }
-
-  /* ─── SQUADS SECTION ─────────────────────────────────── */
-  .squads-section { padding: 40px 0 0; }
-  .squad-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
-  .squad-tab {
-    font-family: var(--font-body);
-    font-size: 13px; font-weight: 500;
-    padding: 10px 20px;
-    cursor: pointer;
-    color: var(--sub);
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: all .15s ease;
-    letter-spacing: .02em;
-  }
-  .squad-tab.active-p { color: var(--accent-p); border-bottom-color: var(--accent-p); }
-  .squad-tab.active-a { color: var(--accent-a); border-bottom-color: var(--accent-a); }
-  .squad-tab.active-k { color: var(--accent-k); border-bottom-color: var(--accent-k); }
-  .squad-tab:not(.active-p):not(.active-a):not(.active-k):hover { color: var(--text); }
-
-  .squad-panel { display: none; }
-  .squad-panel.visible { display: block; }
-
-  .player-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-  }
-  .player-table th {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: .1em;
-    color: var(--sub);
-    text-transform: uppercase;
-    text-align: left;
-    padding: 0 12px 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .player-table th:last-child { text-align: right; }
-  .player-table td {
-    padding: 11px 12px;
-    border-bottom: 1px solid rgba(37,40,48,.6);
-    vertical-align: middle;
-  }
-  .player-table tbody tr { transition: background .1s; }
-  .player-table tbody tr:hover { background: rgba(30,58,138,.04); }
-  .player-table tbody tr:last-child td { border-bottom: none; }
-
-  .player-name { font-weight: 500; }
-  .player-team {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--sub);
-    background: #e8ecf4;
-    padding: 2px 6px;
-    border-radius: 3px;
-    border: 1px solid var(--border);
-    display: inline-block;
-  }
-  .player-role {
-    font-size: 11px;
-    color: var(--sub);
-  }
-  .player-pts {
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 500;
-    text-align: right;
-  }
-  .pts-high { color: var(--green); }
-  .pts-zero { color: var(--muted); }
-
-  .runs-cell, .wkts-cell {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--sub);
-  }
-  .wkts-cell .wkt-dot {
-    display: inline-block;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--accent-k);
-    color: #fff;
-    font-size: 9px;
-    font-weight: 700;
-    text-align: center;
-    line-height: 16px;
-    margin-right: 3px;
-  }
-
-  /* ─── SUBSTITUTION PANEL ─────────────────────────────── */
-  .sub-section { padding: 40px 0 0; }
-  .sub-toggle-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: border-color .15s;
-    user-select: none;
-  }
-  .sub-toggle-bar:hover { border-color: var(--muted); }
-  .sub-toggle-bar .left { display: flex; align-items: center; gap: 10px; }
-  .sub-toggle-label { font-size: 13px; font-weight: 500; color: var(--sub); }
-  .sub-count-badge {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 2px 7px;
-    border-radius: 10px;
-    color: var(--sub);
-  }
-  .chevron { font-size: 12px; color: var(--sub); transition: transform .2s; }
-  .chevron.open { transform: rotate(180deg); }
-
-  .sub-drawer {
-    display: none;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 10px 10px;
-    padding: 20px;
-  }
-  .sub-drawer.open { display: block; }
-
-  .sub-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
-  @media(max-width:640px){ .sub-form { grid-template-columns: 1fr 1fr; } }
-
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-label { font-family: var(--font-mono); font-size: 10px; color: var(--sub); letter-spacing: .08em; text-transform: uppercase; }
-  .form-select, .form-input {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 13px;
-    padding: 9px 12px;
-    border-radius: 6px;
-    width: 100%;
-    outline: none;
-    transition: border-color .15s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-  .form-select:focus, .form-input:focus { border-color: var(--muted); }
-  .form-select option { background: var(--card); }
-
-  .sub-note {
-    font-size: 11.5px;
-    color: var(--sub);
-    margin-top: 14px;
-    line-height: 1.6;
-    padding: 10px 14px;
-    background: #f0f3f9;
-    border-radius: 6px;
-    border-left: 3px solid var(--muted);
-  }
-
-  /* ─── SUB LOG TABLE ──────────────────────────────────── */
-  .sub-log { margin-top: 20px; }
-  .sub-log-title { font-family: var(--font-mono); font-size: 10px; color: var(--sub); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
-  .sub-log-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  .sub-log-table th {
-    font-family: var(--font-mono); font-size: 10px; color: var(--sub);
-    text-transform: uppercase; letter-spacing: .08em;
-    text-align: left; padding: 0 10px 8px;
-    border-bottom: 1px solid var(--border);
-  }
-  .sub-log-table td { padding: 9px 10px; border-bottom: 1px solid rgba(37,40,48,.5); color: var(--sub); }
-  .sub-log-table td:first-child { color: var(--text); font-weight: 500; }
-  .sub-log-empty { text-align: center; color: var(--muted); font-size: 12px; padding: 20px 0; font-family: var(--font-mono); }
-
-  /* Status badges */
-  .status-badge {
-    font-family: var(--font-mono); font-size: 10px; padding: 2px 7px;
-    border-radius: 10px; letter-spacing: .04em;
-  }
-  .status-pending  { background: rgba(30,58,138,.08); color: var(--accent-p); border: 1px solid rgba(30,58,138,.2); }
-  .status-executed { background: rgba(86,207,134,.12); color: var(--green);    border: 1px solid rgba(86,207,134,.2); }
-
-  /* ─── LOADING / ERROR STATES ─────────────────────────── */
-  .loading-bar {
-    height: 3px;
-    background: linear-gradient(90deg, transparent 0%, var(--accent-p) 50%, transparent 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.4s ease-in-out infinite;
-  }
-  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-  .skeleton {
-    background: var(--surface);
-    border-radius: 4px;
-    animation: skpulse 1.6s ease-in-out infinite;
-  }
-  @keyframes skpulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
-
-  .error-banner {
-    background: rgba(240,96,96,.1);
-    border: 1px solid rgba(240,96,96,.25);
-    color: #f5a0a0;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin: 16px 0;
-    display: none;
-  }
-
-  /* ─── TOAST ──────────────────────────────────────────── */
-  .toast {
-    position: fixed; bottom: 28px; right: 28px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 14px 20px;
-    border-radius: 10px;
-    font-size: 13px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.12);
-    opacity: 0; transform: translateY(8px);
-    transition: all .25s ease;
-    z-index: 999;
-    max-width: 320px;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.success { border-left: 3px solid var(--green); }
-  .toast.error   { border-left: 3px solid var(--red); }
-
-  /* ─── MODAL ──────────────────────────────────────────── */
-  .modal-bg {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
-    z-index: 900; align-items: center; justify-content: center;
-  }
-  .modal-bg.open { display: flex; }
-  .modal {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px;
-    max-width: 480px; width: 90%;
-    box-shadow: 0 24px 64px rgba(0,0,0,.15);
-  }
-  .modal h3 { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px; }
-  .modal p { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 18px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-
-  /* ─── SETUP NOTICE ───────────────────────────────────── */
-  .setup-notice {
-    background: #ffffff;
-    border: 1px solid rgba(30,58,138,.2);
-    border-radius: 10px;
-    padding: 20px 22px;
-    margin: 24px 0;
-    display: none;
-  }
-  .setup-notice h4 { font-size: 14px; font-weight: 600; color: var(--accent-p); margin-bottom: 6px; }
-  .setup-notice p  { font-size: 12.5px; color: var(--sub); line-height: 1.65; }
-  .setup-notice code {
-    font-family: var(--font-mono); font-size: 11px;
-    background: var(--surface); padding: 2px 6px; border-radius: 3px;
-    color: var(--accent-a);
-  }
-
-
-  /* ── SUB BADGES ─────────────────────────────────────────── */
-  .sub-in-badge {
-    font-family: var(--font-mono); font-size: 9px; font-weight: 600;
-    background: rgba(22,163,74,.12); color: var(--green);
-    border: 1px solid rgba(22,163,74,.25);
-    padding: 1px 5px; border-radius: 3px; margin-left: 6px;
-    vertical-align: middle; letter-spacing: .04em;
-  }
-  .sub-out-badge {
-    font-family: var(--font-mono); font-size: 9px; font-weight: 600;
-    background: rgba(100,112,138,.1); color: var(--sub);
-    border: 1px solid rgba(100,112,138,.2);
-    padding: 1px 5px; border-radius: 3px; margin-left: 6px;
-    vertical-align: middle; letter-spacing: .04em;
-  }
-  .sub-pending-badge {
-    font-family: var(--font-mono); font-size: 9px;
-    background: rgba(37,99,235,.08); color: var(--accent-a);
-    border: 1px solid rgba(37,99,235,.2);
-    padding: 1px 5px; border-radius: 3px; margin-left: 6px;
-    vertical-align: middle;
-  }
-  .row-retired td { opacity: .6; }
-  .row-pending td { opacity: .75; font-style: italic; }
-
-  /* ─── MISC ───────────────────────────────────────────── */
-  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
-
-  @media(max-width:480px){
-    .lb-cards { grid-template-columns: 1fr; }
-    header { flex-direction: column; align-items: flex-start; }
-  }
+:root {
+  --bg:#f0f3f9;--surface:#fff;--card:#fff;--border:#dde2ee;--muted:#b8c0d4;
+  --text:#1a1f2e;--sub:#64708a;--accent-p:#1e3a8a;--accent-a:#2563eb;--accent-k:#e11d6a;
+  --green:#16a34a;--red:#dc2626;
+  --font-display:'Bebas Neue',sans-serif;--font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px 60px}
+header{display:flex;align-items:center;justify-content:space-between;padding:28px 0 24px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.header-left{display:flex;align-items:baseline;gap:14px}
+.logo{font-family:var(--font-display);font-size:clamp(2rem,6vw,3.2rem);letter-spacing:.04em;background:linear-gradient(135deg,#1e3a8a,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.season-badge{font-family:var(--font-mono);font-size:11px;color:var(--sub);border:1px solid var(--border);padding:3px 8px;border-radius:4px;letter-spacing:.08em}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid transparent;white-space:nowrap}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--sub)}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text)}
+.btn-primary{background:var(--accent-p);color:#fff;font-weight:600}
+.btn-primary:hover{filter:brightness(1.1)}
+.refresh-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.last-sync{font-family:var(--font-mono);font-size:11px;color:var(--sub)}
+.loading-bar{height:3px;background:linear-gradient(90deg,transparent,var(--accent-p),transparent);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.error-banner{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);color:#b91c1c;padding:12px 16px;border-radius:8px;font-size:13px;margin:16px 0;display:none}
+.section-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:var(--sub);text-transform:uppercase;margin-bottom:14px}
+.lb-section{padding:32px 0 0}
+.lb-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.lb-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.lb-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.lb-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.lb-card.p::before{background:var(--accent-p)}.lb-card.a::before{background:var(--accent-a)}.lb-card.k::before{background:var(--accent-k)}
+.lb-card.p{border-color:rgba(30,58,138,.15)}.lb-card.a{border-color:rgba(37,99,235,.15)}.lb-card.k{border-color:rgba(225,29,106,.15)}
+.lb-rank{font-family:var(--font-display);font-size:1.1rem;color:var(--muted);position:absolute;top:18px;right:22px}
+.lb-name{font-family:var(--font-display);font-size:1.9rem;letter-spacing:.03em;margin-bottom:2px}
+.lb-card.p .lb-name{color:var(--accent-p)}.lb-card.a .lb-name{color:var(--accent-a)}.lb-card.k .lb-name{color:var(--accent-k)}
+.lb-pts{font-family:var(--font-display);font-size:3.4rem;line-height:1;letter-spacing:.01em}
+.lb-pts-label{font-size:11px;color:var(--sub);font-family:var(--font-mono);letter-spacing:.06em;margin-top:2px}
+.lb-breakdown{display:flex;gap:18px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.lb-stat-val{font-family:var(--font-mono);font-size:15px;font-weight:500}
+.lb-stat-lbl{font-size:10px;color:var(--sub);letter-spacing:.06em;margin-top:1px}
+.squads-section{padding:40px 0 0}
+.squad-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.squad-tab{font-family:var(--font-body);font-size:13px;font-weight:500;padding:10px 20px;cursor:pointer;color:var(--sub);background:transparent;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.squad-tab.active-p{color:var(--accent-p);border-bottom-color:var(--accent-p)}
+.squad-tab.active-a{color:var(--accent-a);border-bottom-color:var(--accent-a)}
+.squad-tab.active-k{color:var(--accent-k);border-bottom-color:var(--accent-k)}
+.squad-panel{display:none}.squad-panel.visible{display:block}
+.player-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.player-table th{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--sub);text-transform:uppercase;text-align:left;padding:0 12px 10px;border-bottom:1px solid var(--border)}
+.player-table th:last-child{text-align:right}
+.player-table td{padding:11px 12px;border-bottom:1px solid rgba(221,226,238,.6);vertical-align:middle}
+.player-table tbody tr:hover{background:rgba(30,58,138,.03)}
+.player-table tbody tr:last-child td{border-bottom:none}
+.player-name{font-weight:500}
+.player-team{font-family:var(--font-mono);font-size:11px;color:var(--sub);background:var(--bg);padding:2px 6px;border-radius:3px;border:1px solid var(--border);display:inline-block}
+.player-role{font-size:11px;color:var(--sub)}
+.player-pts{font-family:var(--font-mono);font-size:14px;font-weight:500;text-align:right}
+.pts-high{color:var(--green)}.pts-zero{color:var(--muted)}
+.runs-cell,.wkts-cell{font-family:var(--font-mono);font-size:12px;color:var(--sub)}
+.wkt-dot{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--accent-k);color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:18px;margin-right:3px}
+.sub-in-badge{font-family:var(--font-mono);font-size:9px;font-weight:600;background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.25);padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle}
+.sub-out-badge{font-family:var(--font-mono);font-size:9px;font-weight:600;background:rgba(100,112,138,.1);color:var(--sub);border:1px solid rgba(100,112,138,.2);padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle}
+.sub-pending-badge{font-family:var(--font-mono);font-size:9px;background:rgba(37,99,235,.08);color:var(--accent-a);border:1px solid rgba(37,99,235,.2);padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle}
+.row-retired td{opacity:.55}.row-pending td{opacity:.75;font-style:italic}
+.retired-header td{padding:6px 12px 2px;font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;border-bottom:none!important;background:none!important}
+.sub-section{padding:40px 0 0}
+.sub-toggle-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s;user-select:none;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.sub-toggle-bar:hover{border-color:var(--muted)}
+.sub-toggle-left{display:flex;align-items:center;gap:10px}
+.sub-toggle-label{font-size:13px;font-weight:500;color:var(--sub)}
+.sub-count-badge{font-family:var(--font-mono);font-size:10px;background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:10px;color:var(--sub)}
+.chevron{font-size:12px;color:var(--sub);transition:transform .2s}.chevron.open{transform:rotate(180deg)}
+.sub-drawer{display:none;background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:20px}
+.sub-drawer.open{display:block}
+.sub-log-title{font-family:var(--font-mono);font-size:10px;color:var(--sub);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.sub-log-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.sub-log-table th{font-family:var(--font-mono);font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:0 10px 8px;border-bottom:1px solid var(--border)}
+.sub-log-table td{padding:9px 10px;border-bottom:1px solid rgba(221,226,238,.5);color:var(--sub)}
+.sub-log-table td:first-child{color:var(--text);font-weight:500}
+.sub-log-empty{text-align:center;color:var(--muted);font-size:12px;padding:20px 0;font-family:var(--font-mono)}
+.status-badge{font-family:var(--font-mono);font-size:10px;padding:2px 7px;border-radius:10px;letter-spacing:.04em}
+.status-pending{background:rgba(37,99,235,.08);color:var(--accent-a);border:1px solid rgba(37,99,235,.2)}
+.status-executed{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:900;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;max-width:480px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,.15)}
+.modal h3{font-family:var(--font-display);font-size:1.5rem;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.sub-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-family:var(--font-mono);font-size:10px;color:var(--sub);letter-spacing:.08em;text-transform:uppercase}
+.form-select,.form-input{background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--font-body);font-size:13px;padding:9px 12px;border-radius:6px;width:100%;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none}
+.form-select:focus,.form-input:focus{border-color:var(--accent-a)}
+.sub-note-box{font-size:11.5px;color:var(--sub);padding:10px 14px;background:var(--bg);border-radius:6px;border-left:3px solid var(--muted);line-height:1.6}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--card);border:1px solid var(--border);padding:14px 20px;border-radius:10px;font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,.12);opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;max-width:320px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}
+hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
+@media(max-width:480px){.lb-cards{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
-
-<!-- loading bar at very top -->
-<div class="loading-bar" id="loadBar" style="display:none"></div>
-
+<div id="loadBar" style="display:none" class="loading-bar"></div>
 <div class="wrap">
-
-  <!-- ── HEADER ─────────────────────────────────────────── -->
   <header>
     <div class="header-left">
       <span class="logo">IPL Fantasy</span>
-      <span class="season-badge">2026 · Draft League</span>
+      <span class="season-badge">2026 &middot; Draft League</span>
     </div>
     <div class="header-right">
-      <span class="last-sync" id="lastSync">–</span>
+      <span class="last-sync" id="lastSync"></span>
       <div class="refresh-dot" id="refreshDot" style="display:none"></div>
-      <button class="btn btn-ghost" onclick="loadData()">⟳ Refresh</button>
+      <button class="btn btn-ghost" onclick="loadData()">&#8635; Refresh</button>
       <button class="btn btn-primary" onclick="openSubModal()">+ Sub Request</button>
     </div>
   </header>
-
-  <!-- ── SETUP NOTICE (shown when URLs not configured) ──── -->
-  <div class="setup-notice" id="setupNotice">
-    <h4>⚙️ One-time setup needed</h4>
-    <p>
-      Open this file in a text editor and update the two constants near the top of the <code>&lt;script&gt;</code> tag:<br><br>
-      <code>SHEET_CSV_URL</code> — your Google Sheet's published CSV URL (PlayerPool tab)<br>
-      <code>APPS_SCRIPT_URL</code> — your Google Apps Script Web App URL (for sub requests)<br><br>
-      Instructions are in the <strong>Setup Guide</strong> below.
-    </p>
-  </div>
-
   <div class="error-banner" id="errorBanner"></div>
-
-  <!-- ── LEADERBOARD ─────────────────────────────────────── -->
   <section class="lb-section">
-    <div class="section-label">🏆 Leaderboard</div>
-    <div class="lb-cards" id="lbCards">
-      <!-- skeleton -->
-      <div class="lb-card p" style="height:130px"><div class="skeleton" style="width:60%;height:22px;margin-bottom:10px"></div><div class="skeleton" style="width:40%;height:40px"></div></div>
-      <div class="lb-card a" style="height:130px"><div class="skeleton" style="width:60%;height:22px;margin-bottom:10px"></div><div class="skeleton" style="width:40%;height:40px"></div></div>
-      <div class="lb-card k" style="height:130px"><div class="skeleton" style="width:60%;height:22px;margin-bottom:10px"></div><div class="skeleton" style="width:40%;height:40px"></div></div>
-    </div>
+    <div class="section-label">&#127942; Leaderboard</div>
+    <div class="lb-cards" id="lbCards"></div>
   </section>
-
   <hr class="divider" />
-
-  <!-- ── SQUADS ──────────────────────────────────────────── -->
   <section class="squads-section">
-    <div class="section-label">🧑‍🤝‍🧑 Squads</div>
+    <div class="section-label">Squads</div>
     <div class="squad-tabs">
       <button class="squad-tab active-p" onclick="switchSquad('Prakhar',this)">Prakhar</button>
       <button class="squad-tab" onclick="switchSquad('Adarsh',this)">Adarsh</button>
       <button class="squad-tab" onclick="switchSquad('Krishna',this)">Krishna</button>
     </div>
     <div id="squad-Prakhar" class="squad-panel visible"></div>
-    <div id="squad-Adarsh"  class="squad-panel"></div>
+    <div id="squad-Adarsh" class="squad-panel"></div>
     <div id="squad-Krishna" class="squad-panel"></div>
   </section>
-
   <hr class="divider" />
-
-  <!-- ── SUBSTITUTIONS ───────────────────────────────────── -->
   <section class="sub-section">
-    <div class="section-label">🔄 Substitutions</div>
-
-    <!-- collapsible toggle bar (closed by default) -->
+    <div class="section-label">&#128260; Substitutions</div>
     <div class="sub-toggle-bar" onclick="toggleSubDrawer()">
-      <div class="left">
+      <div class="sub-toggle-left">
         <span class="sub-toggle-label">Sub Requests</span>
         <span class="sub-count-badge" id="subCountBadge">0 total</span>
       </div>
-      <span class="chevron" id="subChevron">▼</span>
+      <span class="chevron" id="subChevron">&#9660;</span>
     </div>
     <div class="sub-drawer" id="subDrawer">
-      <div class="sub-log" id="subLog">
-        <div class="sub-log-title">History</div>
-        <div class="sub-log-empty" id="subLogEmpty">No substitutions yet.</div>
-        <table class="sub-log-table" id="subLogTable" style="display:none">
-          <thead><tr>
-            <th>Owner</th><th>Out</th><th>In</th><th>Requested</th><th>Executes</th><th>Status</th>
-          </tr></thead>
-          <tbody id="subLogBody"></tbody>
-        </table>
-      </div>
+      <div class="sub-log-title">History</div>
+      <div class="sub-log-empty" id="subLogEmpty">No substitutions yet.</div>
+      <table class="sub-log-table" id="subLogTable" style="display:none">
+        <thead><tr><th>Owner</th><th>Out</th><th>In</th><th>Requested</th><th>Executes</th><th>Status</th></tr></thead>
+        <tbody id="subLogBody"></tbody>
+      </table>
     </div>
   </section>
+</div>
 
-</div><!-- /wrap -->
-
-<!-- ── SUB REQUEST MODAL ───────────────────────────────── -->
 <div class="modal-bg" id="subModal">
   <div class="modal">
     <h3>Request Substitution</h3>
-    <p>Substitutions placed before 2 PM IST execute the same day. Placed after 2 PM, they execute the following day at 2 PM.</p>
-
-    <div class="sub-form" style="grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+    <p>Requests before 2 PM IST execute same day. After 2 PM, they execute the following day at 2 PM.</p>
+    <div class="sub-form">
       <div class="form-group">
         <label class="form-label">Owner</label>
-        <select class="form-select" id="subOwner" onchange="populateSubOutDropdown()">
-          <option value="">— pick —</option>
-          <option>Prakhar</option>
-          <option>Adarsh</option>
-          <option>Krishna</option>
+        <select class="form-select" id="subOwner" onchange="populateSubDropdowns()">
+          <option value="">-- pick --</option>
+          <option>Prakhar</option><option>Adarsh</option><option>Krishna</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">Drop player</label>
-        <select class="form-select" id="subOut">
-          <option value="">— select owner first —</option>
-        </select>
+        <select class="form-select" id="subOut"><option value="">-- select owner first --</option></select>
       </div>
       <div class="form-group">
         <label class="form-label">Add player</label>
-        <select class="form-select" id="subIn">
-          <option value="">— select owner first —</option>
-        </select>
+        <select class="form-select" id="subIn"><option value="">-- select owner first --</option></select>
       </div>
       <div class="form-group">
         <label class="form-label">Note (optional)</label>
         <input class="form-input" id="subNote" type="text" placeholder="e.g. injury cover" maxlength="80" />
       </div>
     </div>
-
-    <div class="sub-note">
-      ℹ️ The system records your request but does <strong>not</strong> enforce substitution limits — manage those between yourselves.
-    </div>
-
-    <div class="modal-actions" style="margin-top:18px;">
+    <div class="sub-note-box">The system records your request but does not enforce substitution limits.</div>
+    <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeSubModal()">Cancel</button>
       <button class="btn btn-primary" id="subSubmitBtn" onclick="submitSub()">Submit Request</button>
     </div>
   </div>
 </div>
 
-<!-- ── TOAST ───────────────────────────────────────────── -->
 <div class="toast" id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   ⚙️  CONFIGURE THESE TWO URLS BEFORE DEPLOYING
-   ═══════════════════════════════════════════════════════════
-   SHEET_CSV_URL      → PlayerPool tab published as CSV
-   APPS_SCRIPT_URL    → Apps Script Web App URL
-   SUBS_CSV_URL       → Substitutions tab published as CSV
-   ═══════════════════════════════════════════════════════════ */
-const SHEET_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=1548351330&single=true&output=csv';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4-HJC__D0Nsxw8b0EI_f2JvifALmwqr_pHqbPBHuHpRfVUlE6KRRVHKQ1hsqdkzWypQ/exec';
-const SUBS_CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=887843324&single=true&output=csv'; // publish Substitutions tab as CSV, paste URL here
+var SHEET_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=1548351330&single=true&output=csv';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4-HJC__D0Nsxw8b0EI_f2JvifALmwqr_pHqbPBHuHpRfVUlE6KRRVHKQ1hsqdkzWypQ/exec';
+var SUBS_CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=887843324&single=true&output=csv';
 
-/* ── Draft assignments ─────────────────────────────────────── */
-const DRAFT = {
-  Prakhar: [
-    "Shubman Gill","Virat Kohli","Yashasvi Jaiswal","Noor Ahmad","Mitchell Marsh",
-    "Prasidh Krishna","Travis Head","Jos Buttler","Rohit Sharma","Trent Boult",
-    "Krunal Pandya","Prabhsimran Singh"
-  ],
-  Adarsh: [
-    "Abhishek Sharma","Sanju Samson","Sai Sudharsan","Varun Chakravarthy","Marco Jansen",
-    "Aiden Markram","KL Rahul","Finn Allen","Axar Patel","Rajat Patidar",
-    "Tilak Varma","Shimron Hetmyer"
-  ],
-  Krishna: [
-    "Jasprit Bumrah","Hardik Pandya","Rashid Khan","Arshdeep Singh","Suryakumar Yadav",
-    "Sunil Narine","Ishan Kishan","Ruturaj Gaikwad","Shreyas Iyer","Nicholas Pooran",
-    "Vaibhav Suryavanshi","Harshal Patel"
-  ]
+var DRAFT = {
+  Prakhar: ["Shubman Gill","Virat Kohli","Yashasvi Jaiswal","Noor Ahmad","Mitchell Marsh","Prasidh Krishna","Travis Head","Jos Buttler","Rohit Sharma","Trent Boult","Krunal Pandya","Prabhsimran Singh"],
+  Adarsh:  ["Abhishek Sharma","Sanju Samson","Sai Sudharsan","Varun Chakravarthy","Marco Jansen","Aiden Markram","KL Rahul","Finn Allen","Axar Patel","Rajat Patidar","Tilak Varma","Shimron Hetmyer"],
+  Krishna: ["Jasprit Bumrah","Hardik Pandya","Rashid Khan","Arshdeep Singh","Suryakumar Yadav","Sunil Narine","Ishan Kishan","Ruturaj Gaikwad","Shreyas Iyer","Nicholas Pooran","Vaibhav Suryavanshi","Harshal Patel"]
 };
 
-/* ── State ─────────────────────────────────────────────────── */
-let playerPool  = {};   // name → { team, role, runs, wickets, points }
-let executedSubs = [];  // parsed from Substitutions sheet CSV (status=executed)
-let pendingSubs  = [];  // status=pending, stored in localStorage
+var playerPool = {};
+var executedSubs = [];
 
-/* Seed playerPool with all draft players at zero so UI always renders */
-function seedPlayerPool(){
-  Object.values(DRAFT).flat().forEach(name => {
-    if(!playerPool[name]) playerPool[name] = { team:'–', role:'–', runs:0, wickets:0, points:0 };
-  });
-}
+function ownerClass(o) { return o==='Prakhar'?'p':o==='Adarsh'?'a':'k'; }
+function ownerAccent(o){ return o==='Prakhar'?'var(--accent-p)':o==='Adarsh'?'var(--accent-a)':'var(--accent-k)'; }
 
-/* ── UTILS ─────────────────────────────────────────────────── */
-function ownerClass(o)  { return o==='Prakhar'?'p':o==='Adarsh'?'a':'k'; }
-function ownerAccent(o) { return o==='Prakhar'?'var(--accent-p)':o==='Adarsh'?'var(--accent-a)':'var(--accent-k)'; }
-
-function toast(msg, type='success'){
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast ${type} show`;
-  setTimeout(()=>{ el.classList.remove('show'); }, 3200);
-}
-function showLoading(show){
-  document.getElementById('loadBar').style.display = show ? 'block' : 'none';
-  document.getElementById('refreshDot').style.display = show ? 'none' : 'block';
+function showToast(msg,type){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast '+(type||'success')+' show';
+  setTimeout(function(){el.classList.remove('show');},3200);
 }
 function showError(msg){
-  const el = document.getElementById('errorBanner');
-  if(msg){ el.textContent = msg; el.style.display='block'; }
-  else    { el.style.display='none'; }
+  var el=document.getElementById('errorBanner');
+  if(msg){el.textContent=msg;el.style.display='block';}else{el.style.display='none';}
 }
 
-/* ── LOAD DATA ─────────────────────────────────────────────── */
-async function loadData(){
-  showLoading(true); showError(null);
-  seedPlayerPool(); // ensure UI always has something to render
-  try {
-    // 1. Load PlayerPool
-    const r1 = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
-    if(!r1.ok) throw new Error('PlayerPool fetch failed: HTTP ' + r1.status);
-    parsePlayerPool(await r1.text());
-
-    // 2. Load executed subs from sheet (if URL configured)
-    if(SUBS_CSV_URL !== 'SUBS_CSV_URL_HERE'){
-      const r2 = await fetch(SUBS_CSV_URL + '&t=' + Date.now());
-      if(r2.ok) parseSubsCSV(await r2.text());
-    }
-
-    document.getElementById('lastSync').textContent =
-      'Synced ' + new Date().toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'}) + ' IST';
-    renderAll();
-  } catch(e){
-    showError('Could not load scores. (' + e.message + ')');
-    renderAll();
-  }
-  showLoading(false);
-}
-
-/* ── PARSE PLAYER POOL CSV ─────────────────────────────────── */
-// Columns: Player Name, Team, Role, Runs, Wickets, Points, Owner
-function parsePlayerPool(text){
-  playerPool = {};
-  const lines = text.trim().split('
-');
-  for(let i=1;i<lines.length;i++){
-    const cols = parseCSVLine(lines[i]);
-    if(!cols[0]) continue;
-    const name = cols[0].trim();
-    playerPool[name] = {
-      team:    (cols[1]||'').trim(),
-      role:    (cols[2]||'').trim(),
-      runs:    parseFloat(cols[3]) || 0,
-      wickets: parseFloat(cols[4]) || 0,
-      points:  parseFloat(cols[5]) || 0,
-    };
-  }
-}
-
-/* ── PARSE SUBS CSV ────────────────────────────────────────── */
-// Columns: Owner, Out, In, Note, Requested, Executes, Status,
-//          Out_Runs_Locked, Out_Wkts_Locked, In_Runs_Baseline, In_Wkts_Baseline
-function parseSubsCSV(text){
-  executedSubs = [];
-  const lines = text.trim().split('
-');
-  for(let i=1;i<lines.length;i++){
-    const c = parseCSVLine(lines[i]);
-    if(!c[0]) continue;
-    const status = (c[6]||'').trim().toLowerCase();
-    if(status === 'executed'){
-      executedSubs.push({
-        owner:           c[0].trim(),
-        out:             c[1].trim(),
-        in:              c[2].trim(),
-        note:            c[3].trim(),
-        requested:       c[4].trim(),
-        executes:        c[5].trim(),
-        status:          'executed',
-        outRunsLocked:   parseFloat(c[7])  || 0,
-        outWktsLocked:   parseFloat(c[8])  || 0,
-        inRunsBaseline:  parseFloat(c[9])  || 0,
-        inWktsBaseline:  parseFloat(c[10]) || 0,
-      });
-    }
+function seedPool(){
+  var names=DRAFT.Prakhar.concat(DRAFT.Adarsh,DRAFT.Krishna);
+  for(var i=0;i<names.length;i++){
+    if(!playerPool[names[i]]) playerPool[names[i]]={team:'-',role:'-',runs:0,wickets:0,points:0};
   }
 }
 
 function parseCSVLine(line){
-  const result = []; let cur = ''; let inQ = false;
-  for(let i=0;i<line.length;i++){
-    const ch = line[i];
-    if(ch==='"'){ inQ=!inQ; }
-    else if(ch===',' && !inQ){ result.push(cur); cur=''; }
-    else { cur+=ch; }
+  var result=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch==='"'){inQ=!inQ;}
+    else if(ch===','&&!inQ){result.push(cur.trim());cur='';}
+    else{cur+=ch;}
   }
-  result.push(cur);
+  result.push(cur.trim());
   return result;
 }
 
-/* ── COMPUTE EFFECTIVE SQUAD FOR AN OWNER ──────────────────── */
-// Returns array of player objects with effective runs/wickets/points
-// accounting for all executed subs.
-function computeSquad(owner){
-  // Start from draft
-  let active = DRAFT[owner].map(name => ({
-    name,
-    runsBaseline: 0,
-    wktsBaseline: 0,
-    subbed: false,    // subbed in (not original draft pick)
-  }));
-  let retired = []; // subbed out players with locked stats
+function parsePlayerPool(text){
+  var lines=text.trim().split('\n');
+  for(var i=1;i<lines.length;i++){
+    var c=parseCSVLine(lines[i]);
+    if(!c[0]) continue;
+    playerPool[c[0]]={team:c[1]||'-',role:c[2]||'-',runs:parseFloat(c[3])||0,wickets:parseFloat(c[4])||0,points:parseFloat(c[5])||0};
+  }
+}
 
-  // Apply executed subs in chronological order
-  const ownerSubs = executedSubs.filter(s => s.owner === owner);
-  ownerSubs.forEach(sub => {
-    const outIdx = active.findIndex(p => p.name === sub.out);
-    if(outIdx !== -1){
-      // Lock the outgoing player
-      retired.push({
-        name:        sub.out,
-        lockedRuns:  sub.outRunsLocked,
-        lockedWkts:  sub.outWktsLocked,
-        lockedPts:   sub.outRunsLocked * 1 + sub.outWktsLocked * 25,
-        executedOn:  sub.executes,
-      });
-      active.splice(outIdx, 1);
+function parseSubsCSV(text){
+  executedSubs=[];
+  var lines=text.trim().split('\n');
+  for(var i=1;i<lines.length;i++){
+    var c=parseCSVLine(lines[i]);
+    if(!c[0]) continue;
+    if((c[6]||'').trim().toLowerCase()==='executed'){
+      executedSubs.push({owner:c[0],out:c[1],in:c[2],requested:c[4],executes:c[5],status:'executed',
+        outRunsLocked:parseFloat(c[7])||0,outWktsLocked:parseFloat(c[8])||0,
+        inRunsBaseline:parseFloat(c[9])||0,inWktsBaseline:parseFloat(c[10])||0});
     }
-    // Add incoming player with their baseline
-    active.push({
-      name:         sub.in,
-      runsBaseline: sub.inRunsBaseline,
-      wktsBaseline: sub.inWktsBaseline,
-      subbed:       true,
-    });
-  });
+  }
+}
 
-  // Also apply any pending subs from localStorage (visual only, no baselines yet)
-  const localPending = getPendingSubs().filter(s => s.owner === owner);
-  localPending.forEach(sub => {
-    const outIdx = active.findIndex(p => p.name === sub.out);
-    if(outIdx !== -1) active.splice(outIdx, 1);
-    active.push({ name: sub.in, runsBaseline: 0, wktsBaseline: 0, subbed: true, pendingOnly: true });
-  });
+function getPendingSubs(){
+  var all=JSON.parse(localStorage.getItem('ipl_subs')||'[]');
+  var keys={};
+  for(var i=0;i<executedSubs.length;i++) keys[executedSubs[i].owner+'|'+executedSubs[i].out+'|'+executedSubs[i].in]=true;
+  return all.filter(function(s){return !keys[s.owner+'|'+s.out+'|'+s.in];});
+}
 
-  // Resolve active players to real stats
-  const resolved = active.map(p => {
-    const pool = playerPool[p.name] || { team:'?', role:'?', runs:0, wickets:0 };
-    const effRuns = Math.max(0, pool.runs - p.runsBaseline);
-    const effWkts = Math.max(0, pool.wickets - p.wktsBaseline);
-    return {
-      name:        p.name,
-      team:        pool.team,
-      role:        pool.role,
-      runs:        effRuns,
-      wickets:     effWkts,
-      points:      effRuns * 1 + effWkts * 25,
-      subbed:      p.subbed,
-      pendingOnly: p.pendingOnly || false,
-      retired:     false,
-    };
+function computeSquad(owner){
+  var active=DRAFT[owner].map(function(n){return{name:n,rb:0,wb:0,subbed:false,pending:false};});
+  var retired=[];
+  var osubs=executedSubs.filter(function(s){return s.owner===owner;});
+  for(var i=0;i<osubs.length;i++){
+    var s=osubs[i],idx=-1;
+    for(var j=0;j<active.length;j++){if(active[j].name===s.out){idx=j;break;}}
+    if(idx!==-1){
+      var pool=playerPool[s.out]||{};
+      retired.push({name:s.out,team:pool.team||'-',role:pool.role||'-',runs:s.outRunsLocked,wickets:s.outWktsLocked,points:s.outRunsLocked+s.outWktsLocked*25,retired:true});
+      active.splice(idx,1);
+    }
+    active.push({name:s.in,rb:s.inRunsBaseline,wb:s.inWktsBaseline,subbed:true,pending:false});
+  }
+  var pending=getPendingSubs().filter(function(s){return s.owner===owner;});
+  for(var i=0;i<pending.length;i++){
+    var s=pending[i];
+    for(var j=0;j<active.length;j++){if(active[j].name===s.out){active.splice(j,1);break;}}
+    active.push({name:s.in,rb:0,wb:0,subbed:true,pending:true});
+  }
+  var resolved=active.map(function(p){
+    var pool=playerPool[p.name]||{team:'-',role:'-',runs:0,wickets:0};
+    var r=Math.max(0,pool.runs-p.rb),w=Math.max(0,pool.wickets-p.wb);
+    return{name:p.name,team:pool.team,role:pool.role,runs:r,wickets:w,points:r+w*25,subbed:p.subbed,pending:p.pending,retired:false};
   });
-
-  // Add retired players at the end
-  retired.forEach(r => {
-    const pool = playerPool[r.name] || { team:'?', role:'?' };
-    resolved.push({
-      name:       r.name,
-      team:       pool.team,
-      role:       pool.role,
-      runs:       r.lockedRuns,
-      wickets:    r.lockedWkts,
-      points:     r.lockedPts,
-      subbed:     false,
-      retired:    true,
-      executedOn: r.executedOn,
-    });
-  });
-
+  for(var i=0;i<retired.length;i++) resolved.push(retired[i]);
   return resolved;
 }
 
-/* ── PENDING SUBS (localStorage) ───────────────────────────── */
-function getPendingSubs(){
-  // Only return subs that haven't been executed on the sheet yet
-  const executedKeys = new Set(executedSubs.map(s => s.owner+'|'+s.out+'|'+s.in));
-  const all = JSON.parse(localStorage.getItem('ipl_subs') || '[]');
-  return all.filter(s => !executedKeys.has(s.owner+'|'+s.out+'|'+s.in));
-}
-
-/* ── RENDER ALL ────────────────────────────────────────────── */
-function renderAll(){
-  renderLeaderboard();
-  renderSquads();
-  renderSubLog();
-}
-
-/* ── LEADERBOARD ───────────────────────────────────────────── */
 function renderLeaderboard(){
-  const totals = {}; const runTotals = {}; const wktTotals = {};
-  ['Prakhar','Adarsh','Krishna'].forEach(owner => {
-    const squad = computeSquad(owner);
-    totals[owner]    = squad.reduce((s,p) => s + p.points, 0);
-    runTotals[owner] = squad.reduce((s,p) => s + p.runs,   0);
-    wktTotals[owner] = squad.reduce((s,p) => s + p.wickets,0);
-  });
-
-  const sorted = ['Prakhar','Adarsh','Krishna'].sort((a,b) => totals[b]-totals[a]);
-  const rankLabels = ['1ST','2ND','3RD'];
-
-  document.getElementById('lbCards').innerHTML = sorted.map((owner,i) => `
-    <div class="lb-card ${ownerClass(owner)}">
-      <span class="lb-rank">${rankLabels[i]}</span>
-      <div class="lb-name">${owner}</div>
-      <div class="lb-pts">${Math.round(totals[owner]).toLocaleString()}</div>
-      <div class="lb-pts-label">PTS</div>
-      <div class="lb-breakdown">
-        <div class="lb-stat">
-          <div class="lb-stat-val">${Math.round(runTotals[owner]).toLocaleString()}</div>
-          <div class="lb-stat-lbl">RUNS</div>
-        </div>
-        <div class="lb-stat">
-          <div class="lb-stat-val">${Math.round(wktTotals[owner])}</div>
-          <div class="lb-stat-lbl">WICKETS</div>
-        </div>
-        <div class="lb-stat">
-          <div class="lb-stat-val">${DRAFT[owner].length}</div>
-          <div class="lb-stat-lbl">PLAYERS</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  var owners=['Prakhar','Adarsh','Krishna'],totals={},runs={},wkts={};
+  for(var i=0;i<owners.length;i++){
+    var sq=computeSquad(owners[i]);
+    totals[owners[i]]=sq.reduce(function(s,p){return s+p.points;},0);
+    runs[owners[i]]=sq.reduce(function(s,p){return s+p.runs;},0);
+    wkts[owners[i]]=sq.reduce(function(s,p){return s+p.wickets;},0);
+  }
+  var sorted=owners.slice().sort(function(a,b){return totals[b]-totals[a];});
+  var ranks=['1ST','2ND','3RD'],html='';
+  for(var i=0;i<sorted.length;i++){
+    var o=sorted[i];
+    html+='<div class="lb-card '+ownerClass(o)+'">'+
+      '<span class="lb-rank">'+ranks[i]+'</span>'+
+      '<div class="lb-name">'+o+'</div>'+
+      '<div class="lb-pts">'+Math.round(totals[o]).toLocaleString()+'</div>'+
+      '<div class="lb-pts-label">PTS</div>'+
+      '<div class="lb-breakdown">'+
+        '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(runs[o]).toLocaleString()+'</div><div class="lb-stat-lbl">RUNS</div></div>'+
+        '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(wkts[o])+'</div><div class="lb-stat-lbl">WICKETS</div></div>'+
+        '<div class="lb-stat"><div class="lb-stat-val">'+DRAFT[o].length+'</div><div class="lb-stat-lbl">PLAYERS</div></div>'+
+      '</div></div>';
+  }
+  document.getElementById('lbCards').innerHTML=html;
 }
 
-/* ── SQUADS ────────────────────────────────────────────────── */
 function renderSquads(){
-  ['Prakhar','Adarsh','Krishna'].forEach(owner => {
-    const squad = computeSquad(owner);
-    const active  = squad.filter(p => !p.retired).sort((a,b) => b.points - a.points);
-    const retired = squad.filter(p =>  p.retired);
-
-    const activeRows = active.map(p => `
-      <tr class="${p.pendingOnly ? 'row-pending' : ''}">
-        <td class="player-name">
-          ${p.name}
-          ${p.subbed && !p.pendingOnly ? '<span class="sub-in-badge">↑ in</span>' : ''}
-          ${p.pendingOnly ? '<span class="sub-pending-badge">⏳ pending</span>' : ''}
-        </td>
-        <td><span class="player-team">${p.team}</span></td>
-        <td class="player-role">${p.role}</td>
-        <td class="runs-cell">${Math.round(p.runs)}</td>
-        <td class="wkts-cell">${p.wickets>0?`<span class="wkt-dot">${Math.round(p.wickets)}</span>`:'–'}</td>
-        <td class="player-pts ${p.points>0?'pts-high':'pts-zero'}">${Math.round(p.points)}</td>
-      </tr>
-    `).join('');
-
-    const retiredRows = retired.map(p => `
-      <tr class="row-retired">
-        <td class="player-name" style="color:var(--sub)">
-          ${p.name}
-          <span class="sub-out-badge">↓ out</span>
-        </td>
-        <td><span class="player-team" style="opacity:.5">${p.team}</span></td>
-        <td class="player-role" style="color:var(--muted)">${p.role}</td>
-        <td class="runs-cell" style="color:var(--muted)">${Math.round(p.runs)}</td>
-        <td class="wkts-cell" style="color:var(--muted)">${p.wickets>0?Math.round(p.wickets):'–'}</td>
-        <td class="player-pts pts-zero">${Math.round(p.points)}</td>
-      </tr>
-    `).join('');
-
-    const retiredSection = retiredRows ? `
-      <tr><td colspan="6" style="padding:6px 12px 2px;font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;border-bottom:none">Subbed Out</td></tr>
-      ${retiredRows}
-    ` : '';
-
-    document.getElementById(`squad-${owner}`).innerHTML = `
-      <table class="player-table">
-        <thead><tr>
-          <th>Player</th><th>Team</th><th>Role</th><th>Runs</th><th>Wkts</th><th>Pts</th>
-        </tr></thead>
-        <tbody>${activeRows}${retiredSection}</tbody>
-      </table>`;
-  });
+  var owners=['Prakhar','Adarsh','Krishna'];
+  for(var oi=0;oi<owners.length;oi++){
+    var owner=owners[oi],squad=computeSquad(owner);
+    var active=squad.filter(function(p){return !p.retired;}).sort(function(a,b){return b.points-a.points;});
+    var ret=squad.filter(function(p){return p.retired;});
+    var rows='';
+    for(var i=0;i<active.length;i++){
+      var p=active[i],badge='';
+      if(p.subbed&&!p.pending) badge='<span class="sub-in-badge">in</span>';
+      if(p.pending) badge='<span class="sub-pending-badge">pending</span>';
+      rows+='<tr class="'+(p.pending?'row-pending':'')+'">'+
+        '<td class="player-name">'+p.name+badge+'</td>'+
+        '<td><span class="player-team">'+p.team+'</span></td>'+
+        '<td class="player-role">'+p.role+'</td>'+
+        '<td class="runs-cell">'+Math.round(p.runs)+'</td>'+
+        '<td class="wkts-cell">'+(p.wickets>0?'<span class="wkt-dot">'+Math.round(p.wickets)+'</span>':'-')+'</td>'+
+        '<td class="player-pts '+(p.points>0?'pts-high':'pts-zero')+'">'+Math.round(p.points)+'</td>'+
+        '</tr>';
+    }
+    if(ret.length>0){
+      rows+='<tr class="retired-header"><td colspan="6">Subbed Out</td></tr>';
+      for(var i=0;i<ret.length;i++){
+        var p=ret[i];
+        rows+='<tr class="row-retired">'+
+          '<td class="player-name">'+p.name+'<span class="sub-out-badge">out</span></td>'+
+          '<td><span class="player-team">'+p.team+'</span></td>'+
+          '<td class="player-role">'+p.role+'</td>'+
+          '<td class="runs-cell">'+Math.round(p.runs)+'</td>'+
+          '<td class="wkts-cell">'+(p.wickets>0?Math.round(p.wickets):'-')+'</td>'+
+          '<td class="player-pts pts-zero">'+Math.round(p.points)+'</td>'+
+          '</tr>';
+      }
+    }
+    document.getElementById('squad-'+owner).innerHTML=
+      '<table class="player-table"><thead><tr>'+
+      '<th>Player</th><th>Team</th><th>Role</th><th>Runs</th><th>Wkts</th><th>Pts</th>'+
+      '</tr></thead><tbody>'+rows+'</tbody></table>';
+  }
 }
 
-/* ── SQUAD TABS ────────────────────────────────────────────── */
-let activeOwner = 'Prakhar';
-function switchSquad(owner, btn){
-  activeOwner = owner;
-  ['Prakhar','Adarsh','Krishna'].forEach(o =>
-    document.getElementById(`squad-${o}`).classList.remove('visible'));
-  document.getElementById(`squad-${owner}`).classList.add('visible');
-  document.querySelectorAll('.squad-tab').forEach(t => t.className = 'squad-tab');
-  btn.classList.add(`active-${ownerClass(owner)}`);
+function renderSubLog(){
+  var all=executedSubs.concat(getPendingSubs());
+  document.getElementById('subCountBadge').textContent=all.length+' total';
+  var empty=document.getElementById('subLogEmpty'),table=document.getElementById('subLogTable');
+  if(all.length===0){empty.style.display='block';table.style.display='none';return;}
+  empty.style.display='none';table.style.display='table';
+  var rows='';
+  for(var i=all.length-1;i>=0;i--){
+    var s=all[i];
+    rows+='<tr>'+
+      '<td style="color:'+ownerAccent(s.owner)+'">'+s.owner+'</td>'+
+      '<td>'+s.out+'</td><td>'+s.in+'</td>'+
+      '<td style="font-family:var(--font-mono);font-size:11px">'+s.requested+'</td>'+
+      '<td style="font-family:var(--font-mono);font-size:11px">'+s.executes+'</td>'+
+      '<td><span class="status-badge status-'+(s.status||'pending')+'">'+(s.status||'pending')+'</span></td>'+
+      '</tr>';
+  }
+  document.getElementById('subLogBody').innerHTML=rows;
 }
 
-/* ── SUB DRAWER ────────────────────────────────────────────── */
+function renderAll(){renderLeaderboard();renderSquads();renderSubLog();}
+
+function switchSquad(owner,btn){
+  ['Prakhar','Adarsh','Krishna'].forEach(function(o){document.getElementById('squad-'+o).classList.remove('visible');});
+  document.getElementById('squad-'+owner).classList.add('visible');
+  document.querySelectorAll('.squad-tab').forEach(function(t){t.className='squad-tab';});
+  btn.classList.add('active-'+ownerClass(owner));
+}
 function toggleSubDrawer(){
-  const drawer  = document.getElementById('subDrawer');
-  const chevron = document.getElementById('subChevron');
-  drawer.classList.toggle('open');
-  chevron.classList.toggle('open', drawer.classList.contains('open'));
+  var d=document.getElementById('subDrawer'),c=document.getElementById('subChevron');
+  d.classList.toggle('open');c.classList.toggle('open',d.classList.contains('open'));
 }
-
-/* ── SUB MODAL ─────────────────────────────────────────────── */
 function openSubModal(){
-  document.getElementById('subOwner').value = '';
-  document.getElementById('subOut').innerHTML = '<option value="">— select owner first —</option>';
-  document.getElementById('subIn').innerHTML  = '<option value="">— select owner first —</option>';
-  document.getElementById('subNote').value = '';
+  document.getElementById('subOwner').value='';
+  document.getElementById('subOut').innerHTML='<option value="">-- select owner first --</option>';
+  document.getElementById('subIn').innerHTML='<option value="">-- select owner first --</option>';
+  document.getElementById('subNote').value='';
   document.getElementById('subModal').classList.add('open');
 }
-function closeSubModal(){ document.getElementById('subModal').classList.remove('open'); }
+function closeSubModal(){document.getElementById('subModal').classList.remove('open');}
 
-function populateSubOutDropdown(){
-  const owner = document.getElementById('subOwner').value;
-  const outSel = document.getElementById('subOut');
-  const inSel  = document.getElementById('subIn');
-  if(!owner){
-    outSel.innerHTML = '<option value="">— select owner first —</option>';
-    inSel.innerHTML  = '<option value="">— select owner first —</option>';
-    return;
-  }
-  // Active (non-retired) players in this owner's squad
-  const squad = computeSquad(owner).filter(p => !p.retired && !p.pendingOnly);
-  outSel.innerHTML = '<option value="">— pick player to drop —</option>' +
-    squad.map(p => `<option>${p.name}</option>`).join('');
-
-  // Available = not currently in any active squad
-  const allActive = new Set(
-    ['Prakhar','Adarsh','Krishna'].flatMap(o =>
-      computeSquad(o).filter(p => !p.retired).map(p => p.name))
-  );
-  const available = Object.keys(playerPool).filter(n => !allActive.has(n));
-  inSel.innerHTML = available.length
-    ? '<option value="">— pick player to add —</option>' + available.sort().map(n => `<option>${n}</option>`).join('')
-    : '<option value="">— all players drafted —</option>';
-}
-
-async function submitSub(){
-  const owner = document.getElementById('subOwner').value;
-  const outP  = document.getElementById('subOut').value;
-  const inP   = document.getElementById('subIn').value;
-  const note  = document.getElementById('subNote').value.trim();
-  if(!owner || !outP || !inP){ toast('Please fill in all fields.','error'); return; }
-
-  const btn = document.getElementById('subSubmitBtn');
-  btn.disabled = true; btn.textContent = 'Submitting…';
-
-  const nowIST  = new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'});
-  const execDate = getExecutionDate();
-
-  const record = { owner, out: outP, in: inP, note, requested: nowIST, executes: execDate, status: 'pending', id: Date.now() };
-
-  try {
-    if(APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_WEBAPP_URL_HERE'){
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST', mode: 'no-cors',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(record)
-      });
-    }
-    // Save locally
-    const all = JSON.parse(localStorage.getItem('ipl_subs') || '[]');
-    all.push(record);
-    localStorage.setItem('ipl_subs', JSON.stringify(all));
-    renderAll();
-    closeSubModal();
-    toast(`✓ Sub logged: ${outP} → ${inP} (executes ${execDate})`);
-  } catch(e){
-    toast('Could not reach Apps Script. Sub saved locally only.','error');
-    const all = JSON.parse(localStorage.getItem('ipl_subs') || '[]');
-    all.push(record);
-    localStorage.setItem('ipl_subs', JSON.stringify(all));
-    renderAll();
-    closeSubModal();
-  }
-  btn.disabled = false; btn.textContent = 'Submit Request';
+function populateSubDropdowns(){
+  var owner=document.getElementById('subOwner').value;
+  var outSel=document.getElementById('subOut'),inSel=document.getElementById('subIn');
+  if(!owner){outSel.innerHTML='<option value="">-- select owner first --</option>';inSel.innerHTML='<option value="">-- select owner first --</option>';return;}
+  var squad=computeSquad(owner).filter(function(p){return !p.retired&&!p.pending;});
+  var outOpts='<option value="">-- pick player to drop --</option>';
+  for(var i=0;i<squad.length;i++) outOpts+='<option>'+squad[i].name+'</option>';
+  outSel.innerHTML=outOpts;
+  var allActive={};
+  ['Prakhar','Adarsh','Krishna'].forEach(function(o){
+    computeSquad(o).filter(function(p){return !p.retired;}).forEach(function(p){allActive[p.name]=true;});
+  });
+  var avail=Object.keys(playerPool).filter(function(n){return !allActive[n];}).sort();
+  if(avail.length===0){inSel.innerHTML='<option value="">-- all players drafted --</option>';}
+  else{var inOpts='<option value="">-- pick player to add --</option>';for(var i=0;i<avail.length;i++) inOpts+='<option>'+avail[i]+'</option>';inSel.innerHTML=inOpts;}
 }
 
 function getExecutionDate(){
-  const now = new Date();
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
-  const ist = new Date(utcMs + 5.5 * 60 * 60000);
-  const cutoff = new Date(ist); cutoff.setHours(14,0,0,0);
-  const execDay = ist < cutoff ? ist : new Date(ist.getTime() + 86400000);
-  return execDay.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Kolkata'}) + ' 2:00 PM IST';
+  var now=new Date(),utcMs=now.getTime()+now.getTimezoneOffset()*60000;
+  var ist=new Date(utcMs+5.5*3600000);
+  var cutoff=new Date(ist.getFullYear(),ist.getMonth(),ist.getDate(),14,0,0);
+  var execDay=ist<cutoff?ist:new Date(ist.getTime()+86400000);
+  return execDay.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Kolkata'})+' 2:00 PM IST';
 }
 
-/* ── SUB LOG ───────────────────────────────────────────────── */
-function renderSubLog(){
-  // Merge executed (from sheet) + pending (from localStorage)
-  const pending = getPendingSubs();
-  const all = [...executedSubs, ...pending].sort((a,b) => b.id - a.id || 0);
-
-  document.getElementById('subCountBadge').textContent = all.length + ' total';
-
-  const tbody  = document.getElementById('subLogBody');
-  const empty  = document.getElementById('subLogEmpty');
-  const table  = document.getElementById('subLogTable');
-
-  if(all.length === 0){ empty.style.display='block'; table.style.display='none'; return; }
-  empty.style.display='none'; table.style.display='table';
-
-  tbody.innerHTML = all.map(s => `
-    <tr>
-      <td style="color:${ownerAccent(s.owner)}">${s.owner}</td>
-      <td>${s.out}</td>
-      <td>${s.in}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${s.requested}</td>
-      <td style="font-family:var(--font-mono);font-size:11px">${s.executes}</td>
-      <td><span class="status-badge status-${s.status||'pending'}">${s.status||'pending'}</span></td>
-    </tr>
-  `).join('');
+function submitSub(){
+  var owner=document.getElementById('subOwner').value;
+  var outP=document.getElementById('subOut').value;
+  var inP=document.getElementById('subIn').value;
+  var note=document.getElementById('subNote').value.trim();
+  if(!owner||!outP||!inP){showToast('Please fill in all fields.','error');return;}
+  var btn=document.getElementById('subSubmitBtn');
+  btn.disabled=true;btn.textContent='Submitting...';
+  var nowIST=new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'});
+  var execDate=getExecutionDate();
+  var record={owner:owner,out:outP,in:inP,note:note,requested:nowIST,executes:execDate,status:'pending',id:Date.now()};
+  fetch(APPS_SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(record)}).catch(function(){});
+  var all=JSON.parse(localStorage.getItem('ipl_subs')||'[]');
+  all.push(record);localStorage.setItem('ipl_subs',JSON.stringify(all));
+  renderAll();closeSubModal();
+  showToast('Sub logged: '+outP+' out, '+inP+' in ('+execDate+')');
+  btn.disabled=false;btn.textContent='Submit Request';
 }
 
-/* ── MODAL BG CLOSE ────────────────────────────────────────── */
-document.getElementById('subModal').addEventListener('click', function(e){
-  if(e.target === this) closeSubModal();
-});
+document.getElementById('subModal').addEventListener('click',function(e){if(e.target===this)closeSubModal();});
 
-/* ── AUTO-REFRESH every 5 min ──────────────────────────────── */
-setInterval(loadData, 5 * 60 * 1000);
+async function loadData(){
+  document.getElementById('loadBar').style.display='block';
+  document.getElementById('refreshDot').style.display='none';
+  showError(null);
+  seedPool();
+  try{
+    var r1=await fetch(SHEET_CSV_URL+'&t='+Date.now());
+    if(r1.ok) parsePlayerPool(await r1.text());
+    else throw new Error('HTTP '+r1.status);
+  }catch(e){showError('Could not load scores from Google Sheets. Showing 0 pts. ('+e.message+')');}
+  try{
+    var r2=await fetch(SUBS_CSV_URL+'&t='+Date.now());
+    if(r2.ok) parseSubsCSV(await r2.text());
+  }catch(e){}
+  renderAll();
+  document.getElementById('lastSync').textContent='Synced '+new Date().toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'})+' IST';
+  document.getElementById('loadBar').style.display='none';
+  document.getElementById('refreshDot').style.display='block';
+}
 
-/* ── INIT ──────────────────────────────────────────────────── */
+setInterval(loadData,300000);
 loadData();
 </script>
-
 </body>
 </html>
