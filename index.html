@@ -583,9 +583,35 @@ function renderLeaderboard(){
         '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(runs[o]).toLocaleString()+'</div><div class="lb-stat-lbl">RUNS</div></div>'+
         '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(wkts[o])+'</div><div class="lb-stat-lbl">WICKETS</div></div>'+
         '<div class="lb-stat"><div class="lb-stat-val">'+DRAFT[o].length+'</div><div class="lb-stat-lbl">PLAYERS</div></div>'+
+        '<div class="lb-stat"><div class="lb-stat-val">'+computeGamesPlayed(o)+'</div><div class="lb-stat-lbl">GAMES</div></div>'+
       '</div></div>';
   }
   document.getElementById('lbCards').innerHTML=html;
+}
+
+function computeGamesPlayed(owner) {
+  var now = new Date();
+  var teams = {};
+  DRAFT[owner].forEach(function(p) {
+    var t = PLAYER_TEAM[p];
+    if (t) teams[t] = true;
+  });
+  var teamGames = {};
+  FIXTURES.forEach(function(f) {
+    var date = f[0], time = f[1], home = f[2], away = f[3];
+    var parts = time.split(':');
+    var kickoff = new Date(date + 'T' + parts[0] + ':' + parts[1] + ':00+05:30');
+    if (now >= kickoff) {
+      if (teams[home]) teamGames[home] = (teamGames[home] || 0) + 1;
+      if (teams[away]) teamGames[away] = (teamGames[away] || 0) + 1;
+    }
+  });
+  var total = 0;
+  DRAFT[owner].forEach(function(p) {
+    var t = PLAYER_TEAM[p];
+    if (t) total += (teamGames[t] || 0);
+  });
+  return total;
 }
 
 function renderSquads(){
