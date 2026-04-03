@@ -377,7 +377,7 @@ var MATCHLOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kE
 
 var DRAFT = {
   Prakhar: ["Shubman Gill","Virat Kohli","Yashasvi Jaiswal","Noor Ahmad","Mitchell Marsh","Prasidh Krishna","Travis Head","Jos Buttler","Rohit Sharma","Trent Boult","Krunal Pandya","Prabhsimran Singh"],
-  Adarsh:  ["Abhishek Sharma","Sanju Samson","Sai Sudharsan","Varun Chakravarthy","Marco Jansen","Aiden Markram","KL Rahul","Finn Allen","Axar Patel","Rajat Patidar","Tilak Varma","Shimron Hetmyer"],
+  Adarsh:  ["Abhishek Sharma","Sanju Samson","Sai Sudharsan","Varun Chakaravarthy","Marco Jansen","Aiden Markram","KL Rahul","Finn Allen","Axar Patel","Rajat Patidar","Tilak Varma","Shimron Hetmyer"],
   Krishna: ["Jasprit Bumrah","Hardik Pandya","Rashid Khan","Arshdeep Singh","Suryakumar Yadav","Sunil Narine","Ishan Kishan","Ruturaj Gaikwad","Shreyas Iyer","Nicholas Pooran","Vaibhav Sooryavanshi","Harshal Patel"]
 };
 
@@ -422,7 +422,9 @@ function parsePlayerPool(text){
   for(var i=1;i<lines.length;i++){
     var c=parseCSVLine(lines[i]);
     if(!c[0]) continue;
-    playerPool[c[0]]={team:c[1]||'-',role:c[2]||'-',runs:parseFloat(c[3])||0,wickets:parseFloat(c[4])||0,points:parseFloat(c[5])||0};
+    var baseRuns=parseFloat(c[3])||0, baseWkts=parseFloat(c[4])||0;
+    var todayRuns=parseFloat(c[7])||0, todayWkts=parseFloat(c[8])||0;
+    playerPool[c[0]]={team:c[1]||'-',role:c[2]||'-',runs:baseRuns+todayRuns,wickets:baseWkts+todayWkts,points:parseFloat(c[5])||0};
   }
 }
 
@@ -786,7 +788,7 @@ var PLAYER_TEAM = {
   'Trent Boult':'MI','Krunal Pandya':'RCB','Prabhsimran Singh':'PBKS',
   // Adarsh
   'Abhishek Sharma':'SRH','Sanju Samson':'CSK','Sai Sudharsan':'GT',
-  'Varun Chakravarthy':'KKR','Marco Jansen':'PBKS','Aiden Markram':'LSG',
+  'Varun Chakaravarthy':'KKR','Marco Jansen':'PBKS','Aiden Markram':'LSG',
   'KL Rahul':'DC','Finn Allen':'KKR','Axar Patel':'DC',
   'Rajat Patidar':'RCB','Tilak Varma':'MI','Shimron Hetmyer':'RR',
   // Krishna
