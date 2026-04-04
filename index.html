@@ -370,10 +370,11 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
 <div class="toast" id="toast"></div>
 
 <script>
-var SHEET_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=1548351330&single=true&output=csv';
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4-HJC__D0Nsxw8b0EI_f2JvifALmwqr_pHqbPBHuHpRfVUlE6KRRVHKQ1hsqdkzWypQ/exec';
-var SUBS_CSV_URL     = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=887843324&single=true&output=csv';
-var MATCHLOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRqyg_kEEqXN4ll_agsr9u07OljYlWvbFYdDxwEWeO5q2l1oxtLzW84sEkDOgTS02lSrIx-D9MwqDsd/pub?gid=1844256889&single=true&output=csv'; // publish MatchLog tab as CSV, paste URL here
+var PLAYERPOOL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRN9B_ClJ0-K_n8UvLYvdccep2Pco6UhPaiAMv_zxHipboT3y9qBBi00P6sNra1YXl8KREda2vEE8UQ/pub?gid=1548351330&single=true&output=csv';
+var RUNSLOG_CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRN9B_ClJ0-K_n8UvLYvdccep2Pco6UhPaiAMv_zxHipboT3y9qBBi00P6sNra1YXl8KREda2vEE8UQ/pub?gid=1393467268&single=true&output=csv';
+var WICKETSLOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRN9B_ClJ0-K_n8UvLYvdccep2Pco6UhPaiAMv_zxHipboT3y9qBBi00P6sNra1YXl8KREda2vEE8UQ/pub?gid=1538020778&single=true&output=csv';
+var SUBS_CSV_URL       = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRN9B_ClJ0-K_n8UvLYvdccep2Pco6UhPaiAMv_zxHipboT3y9qBBi00P6sNra1YXl8KREda2vEE8UQ/pub?gid=887843324&single=true&output=csv';
+var APPS_SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbx4-HJC__D0Nsxw8b0EI_f2JvifALmwqr_pHqbPBHuHpRfVUlE6KRRVHKQ1hsqdkzWypQ/exec';
 
 var DRAFT = {
   Prakhar: ["Shubman Gill","Virat Kohli","Yashasvi Jaiswal","Noor Ahmad","Mitchell Marsh","Prasidh Krishna","Travis Head","Jos Buttler","Rohit Sharma","Trent Boult","Krunal Pandya","Prabhsimran Singh"],
@@ -382,8 +383,9 @@ var DRAFT = {
 };
 
 var playerPool = {};
+var runsLog    = {};
+var wicketsLog = {};
 var executedSubs = [];
-var matchLog = [];
 
 function ownerClass(o) { return o==='Prakhar'?'p':o==='Adarsh'?'a':'k'; }
 function ownerAccent(o){ return o==='Prakhar'?'var(--accent-p)':o==='Adarsh'?'var(--accent-a)':'var(--accent-k)'; }
@@ -422,9 +424,41 @@ function parsePlayerPool(text){
   for(var i=1;i<lines.length;i++){
     var c=parseCSVLine(lines[i]);
     if(!c[0]) continue;
-    var baseRuns=parseFloat(c[3])||0, baseWkts=parseFloat(c[4])||0;
-    var todayRuns=parseFloat(c[7])||0, todayWkts=parseFloat(c[8])||0;
-    playerPool[c[0]]={team:c[1]||'-',role:c[2]||'-',runs:baseRuns+todayRuns,wickets:baseWkts+todayWkts,points:parseFloat(c[5])||0};
+    playerPool[c[0]]={team:c[1]||'-',role:c[2]||'-',runs:parseFloat(c[3])||0,wickets:parseFloat(c[4])||0,points:parseFloat(c[5])||0,owner:c[6]||'-'};
+  }
+}
+
+// RunsLog: Row 1=IDs, Row 2=labels (Home vs Away), Row 3=dates, Row 4+=player data
+function parseRunsLog(text){
+  runsLog = {};
+  var lines = text.trim().split('\n');
+  if (lines.length < 4) return;
+  var labels = parseCSVLine(lines[1]);
+  for (var i = 3; i < lines.length; i++) {
+    var c = parseCSVLine(lines[i]);
+    var player = c[0]; if (!player) continue;
+    for (var col = 1; col < labels.length; col++) {
+      var label = labels[col]; if (!label) continue;
+      var runs = parseFloat(c[col]) || 0;
+      if (runs > 0) { if (!runsLog[label]) runsLog[label] = {}; runsLog[label][player] = runs; }
+    }
+  }
+}
+
+// WicketsLog: same structure as RunsLog
+function parseWicketsLog(text){
+  wicketsLog = {};
+  var lines = text.trim().split('\n');
+  if (lines.length < 4) return;
+  var labels = parseCSVLine(lines[1]);
+  for (var i = 3; i < lines.length; i++) {
+    var c = parseCSVLine(lines[i]);
+    var player = c[0]; if (!player) continue;
+    for (var col = 1; col < labels.length; col++) {
+      var label = labels[col]; if (!label) continue;
+      var wkts = parseFloat(c[col]) || 0;
+      if (wkts > 0) { if (!wicketsLog[label]) wicketsLog[label] = {}; wicketsLog[label][player] = wkts; }
+    }
   }
 }
 
@@ -447,64 +481,44 @@ function parseSubsCSV(text){
   }
 }
 
-function parseMatchLog(text) {
-  matchLog = [];
-  var lines = text.trim().split('\n');
-  for (var i = 1; i < lines.length; i++) {
-    var c = parseCSVLine(lines[i]);
-    if (!c[0]) continue;
-    matchLog.push({
-      date:       c[0].trim(),
-      team1:      c[1].trim(),
-      team2:      c[2].trim(),
-      player:     c[3].trim(),
-      owner:      c[4].trim(),
-      preRuns:    parseFloat(c[5])  || 0,
-      preWkts:    parseFloat(c[6])  || 0,
-      finalRuns:  parseFloat(c[7])  || 0,
-      finalWkts:  parseFloat(c[8])  || 0,
-      finalPts:   parseFloat(c[9])  || 0,
-      status:     (c[10] || '').trim().toLowerCase()
-    });
-  }
-}
-
-// Returns { owner: { playerName: pts } } for a given fixture date+teams
-// Uses finalPts for completed matches, live delta for pre_snapshot matches
+// Returns { owner: { playerName: { pts, live } } } for a given fixture
+// Reads directly from runsLog/wicketsLog using match label (Home vs Away)
+// live=true if match started within last 4 hours
 function getMatchPoints(fdate, t1, t2) {
-  // Try final entries first
-  var finals = matchLog.filter(function(r) {
-    return r.date === fdate && r.team1 === t1 && r.team2 === t2 && r.status === 'final';
-  });
-  if (finals.length > 0) {
-    var result = {};
-    for (var i = 0; i < finals.length; i++) {
-      var r = finals[i];
-      if (!result[r.owner]) result[r.owner] = {};
-      result[r.owner][r.player] = { pts: r.finalPts, live: false };
+  var label = t1 + ' vs ' + t2;
+  var matchRuns = runsLog[label] || {};
+  var matchWkts = wicketsLog[label] || {};
+  if (Object.keys(matchRuns).length === 0 && Object.keys(matchWkts).length === 0) return null;
+
+  // Determine if live — find fixture start time, check if within 4 hours
+  var isLive = false;
+  for (var fi = 0; fi < FIXTURES.length; fi++) {
+    var f = FIXTURES[fi];
+    if (f[0] === fdate && f[2] === t1 && f[3] === t2) {
+      var kickoff = new Date(fdate + 'T' + f[1] + ':00+05:30');
+      var elapsed = (new Date() - kickoff) / 3600000;
+      isLive = elapsed >= 0 && elapsed < 4;
+      break;
     }
-    return result;
   }
 
-  // Try pre_snapshot entries (live match in progress)
-  var pres = matchLog.filter(function(r) {
-    return r.date === fdate && r.team1 === t1 && r.team2 === t2 && r.status === 'pre_snapshot';
-  });
-  if (pres.length > 0) {
-    var result = {};
-    for (var i = 0; i < pres.length; i++) {
-      var r = pres[i];
-      var pool = playerPool[r.player] || { runs: 0, wickets: 0 };
-      var liveRuns = Math.max(0, pool.runs - r.preRuns);
-      var liveWkts = Math.max(0, pool.wickets - r.preWkts);
-      var livePts  = liveRuns + liveWkts * 25;
-      if (!result[r.owner]) result[r.owner] = {};
-      result[r.owner][r.player] = { pts: livePts, live: true };
+  // Build result for squad players only
+  var owners = ['Prakhar','Adarsh','Krishna'];
+  var result = {};
+  for (var oi = 0; oi < owners.length; oi++) {
+    var owner = owners[oi];
+    var squad = computeSquad(owner);
+    for (var pi = 0; pi < squad.length; pi++) {
+      var player = squad[pi].name;
+      var runs = matchRuns[player] || 0;
+      var wkts = matchWkts[player] || 0;
+      if (runs > 0 || wkts > 0) {
+        if (!result[owner]) result[owner] = {};
+        result[owner][player] = { pts: runs + wkts * 25, live: isLive };
+      }
     }
-    return result;
   }
-
-  return null; // no data yet
+  return Object.keys(result).length > 0 ? result : null;
 }
 
 function getPendingSubs(){
@@ -585,35 +599,9 @@ function renderLeaderboard(){
         '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(runs[o]).toLocaleString()+'</div><div class="lb-stat-lbl">RUNS</div></div>'+
         '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(wkts[o])+'</div><div class="lb-stat-lbl">WICKETS</div></div>'+
         '<div class="lb-stat"><div class="lb-stat-val">'+DRAFT[o].length+'</div><div class="lb-stat-lbl">PLAYERS</div></div>'+
-        '<div class="lb-stat"><div class="lb-stat-val">'+computeGamesPlayed(o)+'</div><div class="lb-stat-lbl">GAMES</div></div>'+
       '</div></div>';
   }
   document.getElementById('lbCards').innerHTML=html;
-}
-
-function computeGamesPlayed(owner) {
-  var now = new Date();
-  var teams = {};
-  DRAFT[owner].forEach(function(p) {
-    var t = PLAYER_TEAM[p];
-    if (t) teams[t] = true;
-  });
-  var teamGames = {};
-  FIXTURES.forEach(function(f) {
-    var date = f[0], time = f[1], home = f[2], away = f[3];
-    var parts = time.split(':');
-    var kickoff = new Date(date + 'T' + parts[0] + ':' + parts[1] + ':00+05:30');
-    if (now >= kickoff) {
-      if (teams[home]) teamGames[home] = (teamGames[home] || 0) + 1;
-      if (teams[away]) teamGames[away] = (teamGames[away] || 0) + 1;
-    }
-  });
-  var total = 0;
-  DRAFT[owner].forEach(function(p) {
-    var t = PLAYER_TEAM[p];
-    if (t) total += (teamGames[t] || 0);
-  });
-  return total;
 }
 
 function renderSquads(){
@@ -750,19 +738,21 @@ async function loadData(){
   showError(null);
   seedPool();
   try{
-    var r1=await fetch(SHEET_CSV_URL+'&t='+Date.now());
+    var r1=await fetch(PLAYERPOOL_CSV_URL+'&t='+Date.now());
     if(r1.ok) parsePlayerPool(await r1.text());
     else throw new Error('HTTP '+r1.status);
   }catch(e){showError('Could not load scores from Google Sheets. Showing 0 pts. ('+e.message+')');}
   try{
-    if (MATCHLOG_CSV_URL !== 'MATCHLOG_CSV_URL_HERE') {
-      var rm = await fetch(MATCHLOG_CSV_URL + '&t=' + Date.now());
-      if (rm.ok) parseMatchLog(await rm.text());
-    }
-  } catch(e) {}
+    var r2=await fetch(RUNSLOG_CSV_URL+'&t='+Date.now());
+    if(r2.ok) parseRunsLog(await r2.text());
+  }catch(e){}
   try{
-    var r2=await fetch(SUBS_CSV_URL+'&t='+Date.now());
-    if(r2.ok) parseSubsCSV(await r2.text());
+    var r3=await fetch(WICKETSLOG_CSV_URL+'&t='+Date.now());
+    if(r3.ok) parseWicketsLog(await r3.text());
+  }catch(e){}
+  try{
+    var r4=await fetch(SUBS_CSV_URL+'&t='+Date.now());
+    if(r4.ok) parseSubsCSV(await r4.text());
   }catch(e){}
   renderAll();
   document.getElementById('lastSync').textContent='Synced '+new Date().toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour:'2-digit',minute:'2-digit'})+' IST';
@@ -788,7 +778,7 @@ var PLAYER_TEAM = {
   'Trent Boult':'MI','Krunal Pandya':'RCB','Prabhsimran Singh':'PBKS',
   // Adarsh
   'Abhishek Sharma':'SRH','Sanju Samson':'CSK','Sai Sudharsan':'GT',
-  'Varun Chakaravarthy':'KKR','Marco Jansen':'PBKS','Aiden Markram':'LSG',
+  'Varun Chakravarthy':'KKR','Marco Jansen':'PBKS','Aiden Markram':'LSG',
   'KL Rahul':'DC','Finn Allen':'KKR','Axar Patel':'DC',
   'Rajat Patidar':'RCB','Tilak Varma':'MI','Shimron Hetmyer':'RR',
   // Krishna
@@ -801,79 +791,80 @@ var PLAYER_TEAM = {
 /* ── FULL IPL 2026 LEAGUE SCHEDULE (70 matches) ─────────── */
 /* Format: [date YYYY-MM-DD, time HH:MM, team1, team2, venue] */
 var FIXTURES = [
-  ['2026-03-28','19:30','RCB','SRH','Bengaluru'],
-  ['2026-03-29','19:30','MI','KKR','Mumbai'],
-  ['2026-03-30','19:30','RR','CSK','Guwahati'],
-  ['2026-03-31','19:30','PBKS','GT','Mohali'],
-  ['2026-04-01','19:30','LSG','DC','Lucknow'],
-  ['2026-04-02','19:30','KKR','SRH','Kolkata'],
-  ['2026-04-03','19:30','CSK','PBKS','Chennai'],
-  ['2026-04-04','15:30','DC','MI','Delhi'],
-  ['2026-04-04','19:30','GT','RR','Ahmedabad'],
-  ['2026-04-05','15:30','SRH','LSG','Hyderabad'],
-  ['2026-04-05','19:30','RCB','CSK','Bengaluru'],
-  ['2026-04-06','19:30','KKR','PBKS','Kolkata'],
-  ['2026-04-07','19:30','RR','MI','Guwahati'],
-  ['2026-04-08','19:30','DC','GT','Delhi'],
-  ['2026-04-09','19:30','KKR','LSG','Kolkata'],
-  ['2026-04-10','19:30','RCB','RR','Guwahati'],
-  ['2026-04-11','15:30','SRH','PBKS','Chandigarh'],
-  ['2026-04-11','19:30','CSK','DC','Chennai'],
-  ['2026-04-12','15:30','LSG','GT','Lucknow'],
-  ['2026-04-12','19:30','MI','RCB','Mumbai'],
-  ['2026-04-13','19:30','SRH','RR','Hyderabad'],
-  ['2026-04-14','15:30','CSK','KKR','Chennai'],
-  ['2026-04-14','19:30','DC','LSG','Delhi'],
-  ['2026-04-15','19:30','RCB','LSG','Bengaluru'],
-  ['2026-04-16','19:30','MI','PBKS','Mumbai'],
-  ['2026-04-17','19:30','GT','KKR','Ahmedabad'],
-  ['2026-04-18','15:30','RCB','DC','Bengaluru'],
-  ['2026-04-18','19:30','SRH','CSK','Hyderabad'],
-  ['2026-04-19','15:30','KKR','RR','Kolkata'],
-  ['2026-04-19','19:30','PBKS','LSG','Chandigarh'],
-  ['2026-04-20','19:30','GT','MI','Ahmedabad'],
-  ['2026-04-21','19:30','SRH','DC','Hyderabad'],
-  ['2026-04-22','19:30','LSG','RR','Lucknow'],
-  ['2026-04-23','19:30','MI','CSK','Mumbai'],
-  ['2026-04-24','19:30','RCB','GT','Bengaluru'],
-  ['2026-04-25','15:30','DC','PBKS','Delhi'],
-  ['2026-04-25','19:30','RR','SRH','Jaipur'],
-  ['2026-04-26','15:30','GT','CSK','Ahmedabad'],
-  ['2026-04-26','19:30','LSG','KKR','Lucknow'],
-  ['2026-04-27','19:30','RCB','DC','Delhi'],
-  ['2026-04-28','19:30','RR','PBKS','Chandigarh'],
-  ['2026-04-29','19:30','SRH','MI','Mumbai'],
-  ['2026-04-30','19:30','RCB','GT','Ahmedabad'],
-  ['2026-05-01','19:30','DC','RR','Jaipur'],
-  ['2026-05-02','19:30','MI','CSK','Chennai'],
-  ['2026-05-03','15:30','KKR','SRH','Hyderabad'],
-  ['2026-05-03','19:30','PBKS','GT','Ahmedabad'],
-  ['2026-05-04','19:30','LSG','DC','Delhi'],
-  ['2026-05-05','19:30','CSK','DC','Delhi'],
-  ['2026-05-06','19:30','SRH','PBKS','Hyderabad'],
-  ['2026-05-07','19:30','RCB','LSG','Lucknow'],
-  ['2026-05-08','19:30','DC','KKR','Delhi'],
-  ['2026-05-09','15:30','CSK','MI','Chennai'],
-  ['2026-05-09','19:30','GT','RR','Jaipur'],
-  ['2026-05-10','15:30','RCB','MI','Raipur'],
-  ['2026-05-10','19:30','LSG','CSK','Chennai'],
-  ['2026-05-11','19:30','DC','PBKS','Dharamsala'],
-  ['2026-05-12','19:30','SRH','GT','Ahmedabad'],
-  ['2026-05-13','19:30','RCB','KKR','Raipur'],
-  ['2026-05-14','19:30','MI','CSK','Chennai'],
-  ['2026-05-15','19:30','LSG','CSK','Lucknow'],
-  ['2026-05-16','19:30','GT','KKR','Kolkata'],
-  ['2026-05-17','15:30','RCB','PBKS','Dharamsala'],
-  ['2026-05-17','19:30','DC','RR','Delhi'],
-  ['2026-05-18','19:30','SRH','CSK','Chennai'],
-  ['2026-05-19','19:30','LSG','RR','Jaipur'],
-  ['2026-05-20','19:30','MI','KKR','Kolkata'],
-  ['2026-05-21','19:30','GT','CSK','Chennai'],
-  ['2026-05-22','19:30','RCB','SRH','Hyderabad'],
-  ['2026-05-23','15:30','RR','MI','Mumbai'],
-  ['2026-05-23','19:30','DC','KKR','Kolkata'],
-  ['2026-05-24','15:30','KKR','DC','Kolkata'],
-  ['2026-05-24','19:30','PBKS','LSG','Lucknow']
+  ['2026-03-28','19:30','RCB','SRH'],
+  ['2026-03-29','19:30','MI','KKR'],
+  ['2026-03-30','19:30','RR','CSK'],
+  ['2026-03-31','19:30','PBKS','GT'],
+  ['2026-04-01','19:30','LSG','DC'],
+  ['2026-04-02','19:30','KKR','SRH'],
+  ['2026-04-03','19:30','CSK','PBKS'],
+  ['2026-04-04','15:30','DC','MI'],
+  ['2026-04-04','19:30','GT','RR'],
+  ['2026-04-05','15:30','SRH','LSG'],
+  ['2026-04-05','19:30','RCB','CSK'],
+  ['2026-04-06','19:30','KKR','PBKS'],
+  ['2026-04-07','19:30','RR','MI'],
+  ['2026-04-08','19:30','DC','GT'],
+  ['2026-04-09','19:30','KKR','LSG'],
+  ['2026-04-10','19:30','RR','RCB'],
+  ['2026-04-11','15:30','PBKS','SRH'],
+  ['2026-04-11','19:30','CSK','DC'],
+  ['2026-04-12','15:30','LSG','GT'],
+  ['2026-04-12','19:30','MI','RCB'],
+  ['2026-04-13','19:30','SRH','RR'],
+  ['2026-04-14','19:30','CSK','KKR'],
+  ['2026-04-15','19:30','RCB','LSG'],
+  ['2026-04-16','19:30','MI','PBKS'],
+  ['2026-04-17','19:30','GT','KKR'],
+  ['2026-04-18','15:30','RCB','DC'],
+  ['2026-04-18','19:30','SRH','CSK'],
+  ['2026-04-19','15:30','KKR','RR'],
+  ['2026-04-19','19:30','PBKS','LSG'],
+  ['2026-04-20','19:30','GT','MI'],
+  ['2026-04-21','19:30','SRH','DC'],
+  ['2026-04-22','19:30','LSG','RR'],
+  ['2026-04-23','19:30','MI','CSK'],
+  ['2026-04-24','19:30','RCB','GT'],
+  ['2026-04-25','15:30','DC','PBKS'],
+  ['2026-04-25','19:30','RR','SRH'],
+  ['2026-04-26','15:30','GT','CSK'],
+  ['2026-04-26','19:30','LSG','KKR'],
+  ['2026-04-27','19:30','DC','RCB'],
+  ['2026-04-28','19:30','PBKS','RR'],
+  ['2026-04-29','19:30','MI','SRH'],
+  ['2026-04-30','19:30','GT','RCB'],
+  ['2026-05-01','19:30','RR','DC'],
+  ['2026-05-02','19:30','CSK','MI'],
+  ['2026-05-03','15:30','SRH','KKR'],
+  ['2026-05-03','19:30','GT','PBKS'],
+  ['2026-05-04','19:30','MI','LSG'],
+  ['2026-05-05','19:30','DC','CSK'],
+  ['2026-05-06','19:30','SRH','PBKS'],
+  ['2026-05-07','19:30','LSG','RCB'],
+  ['2026-05-08','19:30','DC','KKR'],
+  ['2026-05-09','15:30','RR','GT'],
+  ['2026-05-10','15:30','CSK','LSG'],
+  ['2026-05-10','19:30','RCB','MI'],
+  ['2026-05-11','19:30','PBKS','DC'],
+  ['2026-05-12','19:30','GT','SRH'],
+  ['2026-05-13','19:30','RCB','KKR'],
+  ['2026-05-14','19:30','PBKS','MI'],
+  ['2026-05-15','19:30','LSG','CSK'],
+  ['2026-05-16','19:30','KKR','GT'],
+  ['2026-05-17','15:30','PBKS','RCB'],
+  ['2026-05-17','19:30','DC','RR'],
+  ['2026-05-18','19:30','CSK','SRH'],
+  ['2026-05-19','19:30','RR','LSG'],
+  ['2026-05-20','19:30','KKR','MI'],
+  ['2026-05-21','19:30','CSK','GT'],
+  ['2026-05-22','19:30','SRH','RCB'],
+  ['2026-05-23','19:30','LSG','PBKS'],
+  ['2026-05-24','15:30','MI','RR'],
+  ['2026-05-24','19:30','KKR','DC'],
+  ['2027-01-01','19:30','TBD','TBD'],
+  ['2027-01-01','19:30','TBD','TBD'],
+  ['2027-01-01','19:30','TBD','TBD'],
+  ['2027-01-01','19:30','TBD','TBD'],
 ];
 
 /* ── RENDER FIXTURE TICKER ───────────────────────────────── */
