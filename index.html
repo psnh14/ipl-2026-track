@@ -578,6 +578,25 @@ function computeSquad(owner){
   return resolved;
 }
 
+function computeGamesPlayed(owner) {
+  // Get current IST time in ms
+  var now = new Date();
+  var squad = computeSquad(owner).filter(function(p){ return !p.retired; });
+  var total = 0;
+  for (var pi = 0; pi < squad.length; pi++) {
+    var team = PLAYER_TEAM[squad[pi].name];
+    if (!team) continue;
+    for (var fi = 0; fi < FIXTURES.length; fi++) {
+      var f = FIXTURES[fi];
+      if (f[2] !== team && f[3] !== team) continue;
+      // Check if fixture has started
+      var kickoff = new Date(f[0] + 'T' + f[1] + ':00+05:30');
+      if (now >= kickoff) total++;
+    }
+  }
+  return total;
+}
+
 function renderLeaderboard(){
   var owners=['Prakhar','Adarsh','Krishna'],totals={},runs={},wkts={};
   for(var i=0;i<owners.length;i++){
@@ -598,7 +617,7 @@ function renderLeaderboard(){
       '<div class="lb-breakdown">'+
         '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(runs[o]).toLocaleString()+'</div><div class="lb-stat-lbl">RUNS</div></div>'+
         '<div class="lb-stat"><div class="lb-stat-val">'+Math.round(wkts[o])+'</div><div class="lb-stat-lbl">WICKETS</div></div>'+
-        '<div class="lb-stat"><div class="lb-stat-val">'+DRAFT[o].length+'</div><div class="lb-stat-lbl">PLAYERS</div></div>'+
+        '<div class="lb-stat"><div class="lb-stat-val">'+computeGamesPlayed(o)+'</div><div class="lb-stat-lbl">GAMES</div></div>'+
       '</div></div>';
   }
   document.getElementById('lbCards').innerHTML=html;
